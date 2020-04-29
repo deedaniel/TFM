@@ -36,7 +36,7 @@ obstacle_radius = 0.3  # 0.3 meters
 linear_delta = 0.05  # 5 centimeters
 
 # Avoidance parameters, radius and number of steps
-radius = 0.4  # 0.4 meters
+radius = 0.3  # 0.3 meters
 steps = 10
 circular_delta = math.pi/(steps-1)  # 180 / steps degrees
 time = 0
