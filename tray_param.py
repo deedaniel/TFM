@@ -10,8 +10,7 @@ from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 
 SCENE_FILE = join(dirname(abspath(__file__)), 'scene_with_panda_2.ttt')
 pr = PyRep()
-pr.launch(SCENE_FILE)  # Launch the application with a scene file that contains a robot
-pr.start()  # Start the simulation
+pr.launch(SCENE_FILE, headless=True)  # Launch the application with a scene file that contains a robot
 
 arm = Panda()  # Get the panda from the scene
 gripper = PandaGripper()  # Get the gripper
@@ -21,30 +20,51 @@ class MyRobot(object):  # Define the structure of the robot
     def __init__(self, my_robot_arm, my_robot_gripper):
         self.arm = my_robot_arm
         self.gripper = my_robot_gripper
+        self.pos = self.arm.get_position()
 
 
 my_panda = MyRobot(arm, gripper)  # Create the robot structure
-robot_pos = my_panda.arm.get_position()
 
-dummy = Dummy('target0')  # We get the initial point of the trajectory
-pos = dummy.get_position()
 
-obstacle = Shape('obstacle')  # We get the position of the obstacle
-obstacle_pos = obstacle.get_position()
-obstacle_radius = 0.3  # 0.3 meters
+class MyTarget(object):  # Define the structure of the target
+    def __init__(self):
+        self.dummy = Dummy('target0')
+        self.initial_pos = self.dummy.get_position()
+        self.pos = []
 
-linear_delta = 0.05  # 5 centimeters
 
-# Avoidance parameters, radius and number of steps
-radius = 0.3  # 0.3 meters
-steps = 10
-circular_delta = math.pi/(steps-1)  # 180 / steps degrees
-time = 0
+target = MyTarget()  # We get the target
+target.pos = target.initial_pos  # We update the pos with the initial position
+
+
+class MyObstacle(object):  # Define the structure of the obstacle
+    def __init__(self):
+        self.obstacle = Shape('obstacle')
+        self.pos = self.obstacle.get_position()  # We get the position of the obstacle
+        self.radius = 0.3/2  # We get the radius of the obstacle
+
+
+obstacle = MyObstacle()
+
+
+class Parameters(object):
+    def __init__(self):
+        self.linear_delta = 0.05  # 5 centimeters
+        # Avoidance parameters: radius and number of steps. Number of steps is fixed, radius changes.
+        self.radius = 0.3
+        self.steps = 10
+        self.circular_delta = math.pi / (self.steps - 1)  # 180 / (steps-1) degrees to make a semi circumference
+        self.time = 0
+
+
+param = Parameters()
+
+pr.start()  # Start the simulation
 
 # Get a path to the first target (rotate so z points down)
 try:
     path = my_panda.arm.get_path(
-        position=pos, euler=[0, math.radians(180), 0])
+        position=target.pos, euler=[0, math.radians(180), 0])
 
     # Step the simulation and advance the agent along the path
     done = False
@@ -56,18 +76,17 @@ except ConfigurationPathError as e:
     print('Could not find path')
     exit()
 
-distance_3D = np.array(obstacle_pos - pos)
+distance_3D = np.array(obstacle.pos - target.pos)
 distance = np.linalg.norm(distance_3D)
-print(distance)
 
-while (distance - linear_delta) > radius:
+while (distance - param.linear_delta) > param.radius:
     # Calculate the next target
-    next_pos = pos + np.array([0, linear_delta, 0])
-    pos = next_pos
+    next_pos = target.pos + np.array([0, param.linear_delta, 0])
+    target.pos = next_pos
 
     try:
         path = my_panda.arm.get_path(
-            position=pos, euler=[0, math.radians(180), 0], ignore_collisions=True)
+            position=target.pos, euler=[0, math.radians(180), 0], ignore_collisions=True)
     except ConfigurationPathError as e:
         print('Could not find path')
         continue
@@ -78,19 +97,19 @@ while (distance - linear_delta) > radius:
         done = path.step()
         pr.step()
 
-    distance_3D = np.array(obstacle_pos - pos)
+    distance_3D = np.array(obstacle.pos - target.pos)
     distance = np.linalg.norm(distance_3D)
 
-for step in range(steps):
+for step in range(param.steps):
     # Calculate the next target
-    next_pos = obstacle_pos + np.array([0,
-                                        -radius * math.cos(step * circular_delta),
-                                        radius * math.sin(step * circular_delta)])
-    pos = next_pos
+    next_pos = obstacle.pos + np.array([0,
+                                        -param.radius * math.cos(step * param.circular_delta),
+                                        param.radius * math.sin(step * param.circular_delta)])
+    target.pos = next_pos
 
     try:
         path = my_panda.arm.get_path(
-            position=pos, euler=[0, math.radians(180), 0], ignore_collisions=True)
+            position=target.pos, euler=[0, math.radians(180), 0], ignore_collisions=True)
     except ConfigurationPathError as e:
         print('Could not find path')
         continue
@@ -100,9 +119,9 @@ for step in range(steps):
     while not done:
         done = path.step()
         pr.step()
-        time += pr.get_simulation_timestep()
+        param.time += pr.get_simulation_timestep()
 
-reward = obstacle_radius/radius + 10/time
+reward = obstacle.radius / param.radius + 10 / param.time
 print(reward)
 
 print('Done ...')
