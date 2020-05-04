@@ -7,6 +7,8 @@ from pyrep.objects.shape import Shape
 from pyrep.errors import ConfigurationPathError
 import math
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
+import matplotlib
+import matplotlib.pyplot as plt
 
 SCENE_FILE = join(dirname(abspath(__file__)), 'scene_with_panda_2.ttt')
 pr = PyRep()
@@ -55,76 +57,98 @@ class Parameters(object):
         self.steps = 10
         self.circular_delta = math.pi / (self.steps - 1)  # 180 / (steps-1) degrees to make a semi circumference
         self.time = 0
+        self.number_of_radius = 5
+        self.radius_step = 0.05
 
 
 param = Parameters()
 
-pr.start()  # Start the simulation
+list_of_radius = []
+list_of_rewards = []
 
-# Get a path to the first target (rotate so z points down)
-try:
-    path = my_panda.arm.get_path(
-        position=target.pos, euler=[0, math.radians(180), 0])
+for number in range(param.number_of_radius):
+    pr.start()  # Start the simulation
 
-    # Step the simulation and advance the agent along the path
-    done = False
-    while not done:
-        done = path.step()
-        pr.step()
-    print('Reached initial target!')
-except ConfigurationPathError as e:
-    print('Could not find path')
-    exit()
-
-distance_3D = np.array(obstacle.pos - target.pos)
-distance = np.linalg.norm(distance_3D)
-
-while (distance - param.linear_delta) > param.radius:
-    # Calculate the next target
-    next_pos = target.pos + np.array([0, param.linear_delta, 0])
-    target.pos = next_pos
-
+    # Get a path to the first target (rotate so z points down)
     try:
         path = my_panda.arm.get_path(
-            position=target.pos, euler=[0, math.radians(180), 0], ignore_collisions=True)
+            position=target.pos, euler=[0, math.radians(180), 0])
+
+        # Step the simulation and advance the agent along the path
+        done = False
+        while not done:
+            done = path.step()
+            pr.step()
+        print('Reached initial target!')
     except ConfigurationPathError as e:
         print('Could not find path')
-        continue
-
-    # Step the simulation and advance the agent along the path
-    done = False
-    while not done:
-        done = path.step()
-        pr.step()
+        exit()
 
     distance_3D = np.array(obstacle.pos - target.pos)
     distance = np.linalg.norm(distance_3D)
 
-for step in range(param.steps):
-    # Calculate the next target
-    next_pos = obstacle.pos + np.array([0,
-                                        -param.radius * math.cos(step * param.circular_delta),
-                                        param.radius * math.sin(step * param.circular_delta)])
-    target.pos = next_pos
+    while (distance - param.linear_delta) > param.radius:
+        # Calculate the next target
+        next_pos = target.pos + np.array([0, param.linear_delta, 0])
+        target.pos = next_pos
 
-    try:
-        path = my_panda.arm.get_path(
-            position=target.pos, euler=[0, math.radians(180), 0], ignore_collisions=True)
-    except ConfigurationPathError as e:
-        print('Could not find path')
-        continue
+        try:
+            path = my_panda.arm.get_path(
+                position=target.pos, euler=[0, math.radians(180), 0], ignore_collisions=True)
+        except ConfigurationPathError as e:
+            print('Could not find path')
+            continue
 
-    # Step the simulation and advance the agent along the path
-    done = False
-    while not done:
-        done = path.step()
-        pr.step()
-        param.time += pr.get_simulation_timestep()
+        # Step the simulation and advance the agent along the path
+        done = False
+        while not done:
+            done = path.step()
+            pr.step()
 
-reward = obstacle.radius / param.radius + 10 / param.time
-print(reward)
+        distance_3D = np.array(obstacle.pos - target.pos)
+        distance = np.linalg.norm(distance_3D)
+
+    for step in range(param.steps):
+        # Calculate the next target
+        next_pos = obstacle.pos + np.array([0,
+                                            -param.radius * math.cos(step * param.circular_delta),
+                                            param.radius * math.sin(step * param.circular_delta)])
+        target.pos = next_pos
+
+        try:
+            path = my_panda.arm.get_path(
+                position=target.pos, euler=[0, math.radians(180), 0], ignore_collisions=True)
+        except ConfigurationPathError as e:
+            print('Could not find path')
+            continue
+
+        # Step the simulation and advance the agent along the path
+        done = False
+        while not done:
+            done = path.step()
+            pr.step()
+            param.time += pr.get_simulation_timestep()
+
+    reward = obstacle.radius / param.radius + 10 / param.time
+
+    list_of_radius = np.append(list_of_radius, param.radius)
+    list_of_rewards = np.append(list_of_rewards, reward)
+    print(list_of_radius)
+
+    param.radius += param.radius_step
+    pr.stop()  # Stop the simulation
+
+
+fig, ax = plt.subplots()
+ax.plot(list_of_radius, list_of_rewards)
+
+ax.set(xlabel='radius (m)', ylabel='reward', title='Reward vs radius')
+ax.grid()
+
+fig.savefig("plot1.png")
+plt.show()
 
 print('Done ...')
 input('Press enter to finish ...')
-pr.stop()  # Stop the simulation
+
 pr.shutdown()  # Close the application
