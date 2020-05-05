@@ -55,8 +55,8 @@ class Parameters(object):
         self.steps = 10
         self.circular_delta = math.pi / (self.steps - 1)  # 180 / (steps-1) degrees to make a semi circumference
         self.time = 0
-        self.number_of_radius = 5
-        self.radius_step = 0.05
+        self.number_of_radius = 10
+        self.radius_step = 0.005
 
 
 param = Parameters()
@@ -106,6 +106,8 @@ for number in range(param.number_of_radius):
 
         distance_3D = np.array(obstacle.pos - target.pos)
         distance = np.linalg.norm(distance_3D)
+
+    param.time = 0
 
     for step in range(param.steps):
         # Calculate the next target
