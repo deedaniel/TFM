@@ -14,9 +14,6 @@ SCENE_FILE = join(dirname(abspath(__file__)), 'scene_with_panda_2.ttt')
 pr = PyRep()
 pr.launch(SCENE_FILE, headless=True)  # Launch the application with a scene file that contains a robot
 
-arm = Panda()  # Get the panda from the scene
-gripper = PandaGripper()  # Get the gripper
-
 
 class MyRobot(object):  # Define the structure of the robot
     def __init__(self, my_robot_arm, my_robot_gripper):
@@ -25,6 +22,8 @@ class MyRobot(object):  # Define the structure of the robot
         self.pos = self.arm.get_position()
 
 
+arm = Panda()  # Get the panda from the scene
+gripper = PandaGripper()  # Get the gripper
 my_panda = MyRobot(arm, gripper)  # Create the robot structure
 
 
@@ -36,7 +35,6 @@ class MyTarget(object):  # Define the structure of the target
 
 
 target = MyTarget()  # We get the target
-target.pos = target.initial_pos  # We update the pos with the initial position
 
 
 class MyObstacle(object):  # Define the structure of the obstacle
@@ -69,6 +67,7 @@ list_of_rewards = []
 for number in range(param.number_of_radius):
     pr.start()  # Start the simulation
 
+    target.pos = target.initial_pos  # We update the pos with the initial position
     # Get a path to the first target (rotate so z points down)
     try:
         path = my_panda.arm.get_path(
