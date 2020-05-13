@@ -53,90 +53,92 @@ class ParamFunction(object):
         self.target = Target()
         self.param = Parameters()
 
-    def avoidance_task(self, radius_interval: list):
+    def avoidance_trial(self, radius):
+        self.pyrep.start()  # We start the simulation
+
+        self.target.pos = self.target.initial_pos  # We set the pos as the initial pos
+
+        # We try to get a path to the initial target of the path
+        try:
+            path = self.robot.arm.get_path(position=self.target.pos,
+                                           euler=[0, math.radians(180), 0])
+
+            # We execute the path
+            done = False
+            while not done:
+                done = path.step()
+                self.pyrep.step()
+            print('Reached initial target.')
+        except ConfigurationPathError:
+            print('Could not find path.')
+            exit()
+
+        distance_3d = np.array(self.obstacle.pos - self.target.pos)
+        distance = np.linalg.norm(distance_3d)
+
+        # Mienstras la distancia al objecto sea menor que el radio del obstaculo, hacemos trayctoria lineal
+        while (distance - self.param.linear_delta) > radius:
+            # Calcular la siguiente posición
+            next_pos = self.target.pos + np.array([0, self.param.linear_delta, 0])
+            self.target.pos = next_pos
+
+            try:
+                path = self.robot.arm.get_path(position=self.target.pos,
+                                               euler=[0, math.radians(180), 0],
+                                               ignore_collisions=True)
+            except ConfigurationPathError:
+                print('Could not find path')
+                continue
+
+            # Step the simulation and advance the agent along the path
+            done = False
+            while not done:
+                done = path.step()
+                self.pyrep.step()
+
+                distance_3d = np.array(self.obstacle.pos - self.target.pos)
+                distance = np.linalg.norm(distance_3d)
+
+        self.param.time = 0  # Inicializamos el tiempo
+
+        # Hacemos trayectoria circular
+        for step in range(self.param.steps):
+            # Calculate the next target
+            next_pos = self.obstacle.pos + np.array([0,
+                                                     -radius * math.cos(step * self.param.circular_delta),
+                                                     radius * math.sin(step * self.param.circular_delta)])
+            self.target.pos = next_pos
+
+            try:
+                path = self.robot.arm.get_path(position=self.target.pos,
+                                               euler=[0, math.radians(180), 0],
+                                               ignore_collisions=True)
+            except ConfigurationPathError:
+                print('Could not find path')
+                continue
+
+            # Step the simulation and advance the agent along the path
+            done = False
+            while not done:
+                done = path.step()
+                self.pyrep.step()
+                self.param.time += self.pyrep.get_simulation_timestep()
+
+        reward = (-(10 * (1 - self.obstacle.radius / radius)) ** 2 + 2) + 10 / self.param.time
+        self.pyrep.stop()  # Stop the simulation
+        return reward
+
+    def avoidance_brute_force(self, radius_interval: list):
         radius_step = 0.005
         list_of_radius = []
         list_of_rewards = []
         self.param.radius = radius_interval[0]
 
         while self.param.radius <= radius_interval[1]:
-            self.pyrep.start()  # We start the simulation
-
-            self.target.pos = self.target.initial_pos  # We set the pos as the initial pos
-
-            # We try to get a path to the initial target of the path
-            try:
-                path = self.robot.arm.get_path(position=self.target.pos,
-                                               euler=[0, math.radians(180), 0])
-
-                # We execute the path
-                done = False
-                while not done:
-                    done = path.step()
-                    self.pyrep.step()
-                print('Reached initial target.')
-            except ConfigurationPathError:
-                print('Could not find path.')
-                exit()
-
-            distance_3d = np.array(self.obstacle.pos - self.target.pos)
-            distance = np.linalg.norm(distance_3d)
-
-            # Mienstras la distancia al objecto sea menor que el radio del obstaculo, hacemos trayctoria lineal
-            while (distance - self.param.linear_delta) > self.param.radius:
-                # Calcular la siguiente posición
-                next_pos = self.target.pos + np.array([0, self.param.linear_delta, 0])
-                self.target.pos = next_pos
-
-                try:
-                    path = self.robot.arm.get_path(position=self.target.pos,
-                                                   euler=[0, math.radians(180), 0],
-                                                   ignore_collisions=True)
-                except ConfigurationPathError:
-                    print('Could not find path')
-                    continue
-
-                # Step the simulation and advance the agent along the path
-                done = False
-                while not done:
-                    done = path.step()
-                    self.pyrep.step()
-
-                    distance_3d = np.array(self.obstacle.pos - self.target.pos)
-                    distance = np.linalg.norm(distance_3d)
-
-            self.param.time = 0  # Inicializamos el tiempo
-            # Hacemos trayectoria circular
-            for step in range(self.param.steps):
-                # Calculate the next target
-                next_pos = self.obstacle.pos + np.array([0,
-                                                         -self.param.radius*math.cos(step*self.param.circular_delta),
-                                                         self.param.radius*math.sin(step*self.param.circular_delta)])
-                self.target.pos = next_pos
-
-                try:
-                    path = self.robot.arm.get_path(position=self.target.pos,
-                                                   euler=[0, math.radians(180), 0],
-                                                   ignore_collisions=True)
-                except ConfigurationPathError:
-                    print('Could not find path')
-                    continue
-
-                # Step the simulation and advance the agent along the path
-                done = False
-                while not done:
-                    done = path.step()
-                    self.pyrep.step()
-                    self.param.time += self.pyrep.get_simulation_timestep()
-
-            reward = (-(10*(1-self.obstacle.radius/self.param.radius))**2+2) + 10 / self.param.time
-
+            reward = self.avoidance_trial(self.param.radius)
             list_of_radius = np.append(list_of_radius, self.param.radius)
             list_of_rewards = np.append(list_of_rewards, reward)
-            print(list_of_radius)
-
             self.param.radius += radius_step
-            self.pyrep.stop()  # Stop the simulation
 
         figure, ax = plt.subplots()
         ax.plot(list_of_radius, list_of_rewards)
