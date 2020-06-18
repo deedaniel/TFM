@@ -6,7 +6,7 @@ from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 from pyrep.objects.dummy import Dummy
 from pyrep.objects.shape import Shape
 from pyrep.errors import ConfigurationPathError
-import math
+
 
 SCENE_FILE = join(dirname(abspath(__file__)), 'scene_with_panda_2.ttt')
 pr = PyRep()
@@ -24,7 +24,6 @@ arm = Panda()  # Get the panda from the scene
 gripper = PandaGripper()  # Get the gripper
 my_panda = MyRobot(arm, gripper)  # Create the robot structure
 
-obstacle = Shape('obstacle')
 
 class MyObstacle(object):  # Define the structure of the obstacle
     def __init__(self):
