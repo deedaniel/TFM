@@ -126,7 +126,7 @@ class ParamFunction(object):
 
         reward = (-(10 * (1 - self.obstacle.radius / radius)) ** 2 + 2) + 10 / self.param.time
         self.pyrep.stop()  # Stop the simulation
-        return reward
+        return -reward
 
     def avoidance_brute_force(self, radius_interval: list):
         radius_step = 0.005
