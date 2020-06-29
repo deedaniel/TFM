@@ -29,7 +29,7 @@ class MyObstacle(object):  # Define the structure of the obstacle
     def __init__(self):
         self.obstacle = Shape('obstacle')
         self.pos = self.obstacle.get_position()  # We get the position of the obstacle
-        self.radius = 0.3/2  # We get the radius of the obstacle
+        self.radius = 0.3  # We get the radius of the obstacle
 
 
 obstacle = MyObstacle()
@@ -37,12 +37,12 @@ obstacle = MyObstacle()
 initial_pos = Dummy('target0')
 final_pos = Dummy('target1')
 
-pos1_rel = np.array([0, -0.2, 0.3])  # Parametro de entrada: posición relativa al obstaculo
+pos1_rel = np.array([-0.13855742, -0.27029802,  0.01403834])  # Parametro de entrada: posición relativa al obstaculo
 pos1_abs = pos1_rel + obstacle.pos
 waypoint1 = Dummy.create()
 waypoint1.set_position(pos1_abs)
 
-pos2_rel = np.array([0, 0.2, 0.3])  # Parametro de entrada: posición relativa al obstaculo
+pos2_rel = np.array([-0.02478715, -0.25553736,  0.16360755])  # Parametro de entrada: posición relativa al obstaculo
 pos2_abs = pos2_rel + obstacle.pos
 waypoint2 = Dummy.create()
 waypoint2.set_position(pos2_abs)
@@ -82,5 +82,10 @@ for pos in tray:
 
 pr.stop()
 pr.shutdown()
-reward = 10 / time
+print(distance_w1)
+print(distance_w2)
+print(time)
+
+reward = (-(5 * (1 - obstacle.radius / distance_w1)) ** 2
+          - (5 * (1 - obstacle.radius / distance_w2)) ** 2 + 2) + 10 / time
 print(reward)

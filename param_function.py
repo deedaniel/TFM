@@ -27,6 +27,12 @@ class Target(object):  # Estructura del objetivo
         self.pos = []
 
 
+class Waypoints(object):
+    def __init__(self):
+        self.initial_pos = Dummy('target0')
+        self.final_pos = Dummy('target1')
+
+
 class Obstacle(object):  # Estructura del obstaculo
     def __init__(self):
         self.obstacle = Shape('obstacle')
@@ -52,8 +58,9 @@ class ParamFunction(object):
         self.obstacle = Obstacle()
         self.target = Target()
         self.param = Parameters()
+        self.waypoints = Waypoints()
 
-    def avoidance_trial(self, radius):
+    def avoidance_tray_circular(self, radius):
         self.pyrep.start()  # We start the simulation
 
         self.target.pos = self.target.initial_pos  # We set the pos as the initial pos
@@ -96,8 +103,7 @@ class ParamFunction(object):
                 done = path.step()
                 self.pyrep.step()
 
-                distance_3d = np.array(self.obstacle.pos - self.target.pos)
-                distance = np.linalg.norm(distance_3d)
+                distance = calc_distance(self.obstacle.pos, self.target.pos)
 
         self.param.time = 0  # Inicializamos el tiempo
 
@@ -135,7 +141,7 @@ class ParamFunction(object):
         self.param.radius = radius_interval[0]
 
         while self.param.radius <= radius_interval[1]:
-            reward = self.avoidance_trial(self.param.radius)
+            reward = self.avoidance_tray_circular(self.param.radius)
             list_of_radius = np.append(list_of_radius, self.param.radius)
             list_of_rewards = np.append(list_of_rewards, reward)
             self.param.radius += radius_step
@@ -148,6 +154,63 @@ class ParamFunction(object):
         plt.show()
         print('Done ...')
 
+    def tray_with_waypoints(self, wp_params: np.array):
+        # Definicion de los waypoints
+        pos1_rel = np.array([wp_params[0], wp_params[1], wp_params[2]])
+        pos1_abs = pos1_rel + self.obstacle.pos
+        waypoint1 = Dummy.create()
+        waypoint1.set_position(pos1_abs)
+
+        pos2_rel = np.array([wp_params[3], wp_params[4], wp_params[5]])
+        pos2_abs = pos2_rel + self.obstacle.pos
+        waypoint2 = Dummy.create()
+        waypoint2.set_position(pos2_abs)
+
+        # Calcular distancia de los waypoints al obstaculo
+        distance_w1 = calc_distance(self.obstacle.pos, waypoint1.get_position())
+        distance_w2 = calc_distance(self.obstacle.pos, waypoint2.get_position())
+
+        # Si la distancia de los waypoints al obstaculo es menor que una distancia de segurdidad no ejecutamos
+        # la trayectoria
+        if distance_w1 < 0.3 or distance_w2 < 0.3:
+            reward = -1000
+            print(reward)
+            return -reward
+
+        # Definición de la trayectoria
+        tray = [self.waypoints.initial_pos, waypoint1, waypoint2, self.waypoints.final_pos]
+
+        # Ejecución de la trayectoria
+        self.pyrep.start()
+
+        self.param.time = 0
+        for pos in tray:
+            try:
+                path = self.robot.arm.get_path(position=pos.get_position(),
+                                               euler=[0, math.radians(180), 0])
+                # Step the simulation and advance the agent along the path
+                done = False
+                while not done:
+                    done = path.step()
+                    self.pyrep.step()
+                    self.param.time += self.pyrep.get_simulation_timestep()
+            except ConfigurationPathError as e:
+                reward = -1000
+                print(reward)
+                return -reward
+
+        reward = (-(5 * (1 - self.obstacle.radius / distance_w1)) ** 2
+                  - (5 * (1 - self.obstacle.radius / distance_w2)) ** 2 + 2) + 10 / self.param.time
+        self.pyrep.stop()
+        print(reward)
+        return -reward
+
     def shutdown(self):
         input('Press enter to finish ...')
         self.pyrep.shutdown()  # Close the application
+
+
+def calc_distance(vector1: np.array, vector2: np.array):
+    distance_3d = np.array(vector1 - vector2)
+    distance = np.linalg.norm(distance_3d)
+    return distance
