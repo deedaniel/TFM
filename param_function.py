@@ -14,9 +14,10 @@ TTT_FILE = 'scene_with_panda_2.ttt'
 
 
 class Robot(object):  # Estructura del robot
-    def __init__(self, my_robot_arm, my_robot_gripper):
+    def __init__(self, my_robot_arm, my_robot_gripper, my_robot_tip):
         self.arm = my_robot_arm
         self.gripper = my_robot_gripper
+        self.tip = my_robot_tip
         self.pos = self.arm.get_position()
 
 
@@ -54,7 +55,7 @@ class ParamFunction(object):
     def __init__(self):
         self.pyrep = PyRep()
         self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=True)
-        self.robot = Robot(Panda(), PandaGripper())
+        self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.obstacle = Obstacle()
         self.target = Target()
         self.param = Parameters()
@@ -166,17 +167,6 @@ class ParamFunction(object):
         waypoint2 = Dummy.create()
         waypoint2.set_position(pos2_abs)
 
-        # Calcular distancia de los waypoints al obstaculo
-        distance_w1 = calc_distance(self.obstacle.pos, waypoint1.get_position())
-        distance_w2 = calc_distance(self.obstacle.pos, waypoint2.get_position())
-
-        # Si la distancia de los waypoints al obstaculo es menor que una distancia de segurdidad no ejecutamos
-        # la trayectoria
-        if distance_w1 < 0.3 or distance_w2 < 0.3:
-            reward = -1000
-            print(reward)
-            return -reward
-
         # Definición de la trayectoria
         tray = [self.waypoints.initial_pos, waypoint1, waypoint2, self.waypoints.final_pos]
 
@@ -184,6 +174,7 @@ class ParamFunction(object):
         self.pyrep.start()
 
         self.param.time = 0
+        cost = 0
         for pos in tray:
             try:
                 path = self.robot.arm.get_path(position=pos.get_position(),
@@ -194,16 +185,19 @@ class ParamFunction(object):
                     done = path.step()
                     self.pyrep.step()
                     self.param.time += self.pyrep.get_simulation_timestep()
-            except ConfigurationPathError as e:
-                reward = -1000
-                print(reward)
-                return -reward
 
-        reward = (-(5 * (1 - self.obstacle.radius / distance_w1)) ** 2
-                  - (5 * (1 - self.obstacle.radius / distance_w2)) ** 2 + 2) + 10 / self.param.time
+                    distance_obstacle = calc_distance(self.obstacle.pos, self.robot.tip.get_position())
+                    distance_objective = calc_distance(self.waypoints.final_pos.get_position(),
+                                                       self.robot.tip.get_position())
+                    cost += 0.1 * math.exp(-50 * (distance_obstacle - 0.3)) + math.exp(distance_objective)
+            except ConfigurationPathError as e:
+                cost = 400
+                print(cost)
+                return cost
+
         self.pyrep.stop()
-        print(reward)
-        return -reward
+        print(cost)
+        return cost
 
     def shutdown(self):
         input('Press enter to finish ...')
