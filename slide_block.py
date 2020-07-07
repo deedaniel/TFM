@@ -42,7 +42,7 @@ class InitTask(object):
 task = InitTask()
 
 # Declaración y definición de los parametros entrada: distancia y orientación
-distance = 0.2
+distance = 0.3
 orientation = 0
 
 final_target_rel = np.array([distance*math.sin(orientation), distance*math.cos(orientation), 0])
@@ -78,7 +78,7 @@ for pos in tray:
             time += pr.get_simulation_timestep()
             print(robot.tip.get_position())
 
-            distance_objective_3D = np.array(task.wp1.get_position() - robot.tip.get_position())
+            distance_objective_3D = np.array(task.wp1.get_position() - task.block.get_position())
             distance_objective = np.linalg.norm(distance_objective_3D)
 
             reward += math.exp(-distance_objective)
