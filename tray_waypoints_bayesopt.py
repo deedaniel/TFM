@@ -4,7 +4,7 @@ import param_function as pf
 
 function = pf.ParamFunction()  # Inicializacion
 
-params = {'n_iterations': 500, 'n_iter_relearn': 5, 'n_init_samples': 2}
+params = {'n_iterations': 1000, 'n_iter_relearn': 5, 'n_init_samples': 2}
 
 n = 6  # n dimensions
 lb = np.array([-0.3, -0.375, -0.10, -0.3, -0.375, -0.10])
