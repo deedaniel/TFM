@@ -6,7 +6,11 @@ function = pf.ParamFunction()  # Inicializacion
 
 bounds = [(-0.4, 0.4), (-0.375, 0.375), (-0.1, 0.4), (-0.4, 0.4), (-0.375, 0.375), (-0.1, 0.4)]
 
-result = differential_evolution(function.tray_with_waypoints, bounds)
-print(result)
+maxiter = 1000
+popsize = 1
+
+result = differential_evolution(function.tray_with_waypoints, bounds, maxiter=maxiter, popsize=popsize)
+print('Result:', result.x)
+print('Function:', result.fun)
 
 function.shutdown()  # Apagado
