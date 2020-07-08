@@ -51,6 +51,12 @@ class Parameters(object):
         self.time = 0
 
 
+class Lists(object):
+    def __init__(self):
+        self.list_of_parameters = []
+        self.list_of_rewards = []
+
+
 class ParamFunction(object):
     def __init__(self):
         self.pyrep = PyRep()
@@ -60,6 +66,7 @@ class ParamFunction(object):
         self.target = Target()
         self.param = Parameters()
         self.waypoints = Waypoints()
+        self.lists = Lists()
 
     def avoidance_tray_circular(self, radius):
         self.pyrep.start()  # We start the simulation
@@ -143,12 +150,12 @@ class ParamFunction(object):
 
         while self.param.radius <= radius_interval[1]:
             reward = self.avoidance_tray_circular(self.param.radius)
-            list_of_radius = np.append(list_of_radius, self.param.radius)
-            list_of_rewards = np.append(list_of_rewards, reward)
+            self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, self.param.radius)
+            self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, reward)
             self.param.radius += radius_step
 
         figure, ax = plt.subplots()
-        ax.plot(list_of_radius, list_of_rewards)
+        ax.plot(self.lists.list_of_parameters, self.lists.list_of_rewards)
         ax.set(xlabel='radius (m)', ylabel='reward', title='Reward vs radius')
         ax.grid()
         figure.savefig("plot1.png")
@@ -197,11 +204,19 @@ class ParamFunction(object):
 
         self.pyrep.stop()
         print(cost)
+        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, wp_params)
+        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, cost)
         return cost
 
     def shutdown(self):
         input('Press enter to finish ...')
         self.pyrep.shutdown()  # Close the application
+
+    def clean_lists(self):
+        self.lists = Lists()
+
+    def return_lists(self):
+        return self.lists
 
 
 def calc_distance(vector1: np.array, vector2: np.array):
