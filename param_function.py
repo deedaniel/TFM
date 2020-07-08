@@ -144,8 +144,7 @@ class ParamFunction(object):
 
     def avoidance_brute_force(self, radius_interval: list):
         radius_step = 0.005
-        list_of_radius = []
-        list_of_rewards = []
+        self.clean_lists()
         self.param.radius = radius_interval[0]
 
         while self.param.radius <= radius_interval[1]:
