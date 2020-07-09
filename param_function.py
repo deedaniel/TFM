@@ -49,12 +49,14 @@ class Parameters(object):
         self.steps = 10
         self.circular_delta = math.pi / (self.steps - 1)  # 180 / (steps-1) grados para hacer semicircunferencia
         self.time = 0
+        self.iteration = 1
 
 
 class Lists(object):
     def __init__(self):
         self.list_of_parameters = []
         self.list_of_rewards = []
+        self.iterations = []
 
 
 class ParamFunction(object):
@@ -138,7 +140,7 @@ class ParamFunction(object):
                 self.pyrep.step()
                 self.param.time += self.pyrep.get_simulation_timestep()
 
-        reward = (-(10 * (1 - self.obstacle.radius / radius)) ** 2 + 2) + 10 / self.param.time
+        reward = (-(20 * (1 - self.obstacle.radius / radius)) ** 2 + 2) + 10 / self.param.time
         self.pyrep.stop()  # Stop the simulation
         return -reward
 
@@ -195,16 +197,16 @@ class ParamFunction(object):
                     distance_obstacle = calc_distance(self.obstacle.pos, self.robot.tip.get_position())
                     distance_objective = calc_distance(self.waypoints.final_pos.get_position(),
                                                        self.robot.tip.get_position())
-                    cost += 0.1 * math.exp(-50 * (distance_obstacle - 0.3)) + math.exp(distance_objective)
+                    cost += 0.1 * math.exp(-20 * (distance_obstacle - 0.3)) + 0.8 * math.exp(distance_objective)
             except ConfigurationPathError as e:
                 cost = 400
-                print(cost)
                 return cost
 
         self.pyrep.stop()
-        print(cost)
         self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, wp_params)
         self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, cost)
+        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
+        self.param.iteration += 1
         return cost
 
     def shutdown(self):
