@@ -18,6 +18,6 @@ print("Result", mvalue, "at", x_out)
 
 listas = function.return_lists()
 
-pickle.dump(listas, open("save_listas.p", "wb"))
+pickle.dump(listas, open("listas_bayesopt_waypoints.p", "wb"))
 
 function.shutdown()  # Apagado

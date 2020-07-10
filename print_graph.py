@@ -3,7 +3,8 @@ import numpy as np
 import param_function as pf
 import matplotlib.pyplot as plt
 
-listas = pickle.load(open("save_listas.p", "rb"))
+file = "listas_bayesopt_tray_circular.p"
+listas = pickle.load(open(file, "rb"))
 
 best_reward = 10000
 list_of_best_reward = []
@@ -14,7 +15,7 @@ for i in range(len(listas.iterations)):
 
 figure, ax = plt.subplots()
 ax.plot(listas.iterations, list_of_best_reward)
-ax.set(xlabel='iterations', ylabel='best reward', title='Reward vs iterations')
+ax.set(xlabel='iteration', ylabel='best reward', title='Reward vs iterations')
 ax.grid()
-figure.savefig("plot2.png")
+figure.savefig("it_rew_tray_circular.png")
 plt.show()

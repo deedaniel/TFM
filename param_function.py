@@ -7,7 +7,7 @@ from pyrep.objects.shape import Shape
 from pyrep.errors import ConfigurationPathError
 import math
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
-import matplotlib.pyplot as plt
+import pickle
 
 DIR_PATH = dirname(abspath(__file__))
 TTT_FILE = 'scene_with_panda_2.ttt'
@@ -142,6 +142,10 @@ class ParamFunction(object):
 
         reward = (-(20 * (1 - self.obstacle.radius / radius)) ** 2 + 2) + 10 / self.param.time
         self.pyrep.stop()  # Stop the simulation
+        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, radius)
+        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, -reward)
+        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
+        self.param.iteration += 1
         return -reward
 
     def avoidance_brute_force(self, radius_interval: list):
@@ -151,17 +155,9 @@ class ParamFunction(object):
 
         while self.param.radius <= radius_interval[1]:
             reward = self.avoidance_tray_circular(self.param.radius)
-            self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, self.param.radius)
-            self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, reward)
             self.param.radius += radius_step
 
-        figure, ax = plt.subplots()
-        ax.plot(self.lists.list_of_parameters, self.lists.list_of_rewards)
-        ax.set(xlabel='radius (m)', ylabel='reward', title='Reward vs radius')
-        ax.grid()
-        figure.savefig("plot1.png")
-        plt.show()
-        print('Done ...')
+        pickle.dump(self.lists, open("listas_brute_force.p", "wb"))
 
     def tray_with_waypoints(self, wp_params: np.array):
         # Definicion de los waypoints

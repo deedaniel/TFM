@@ -1,6 +1,7 @@
 import bayesopt
 import numpy as np
 import param_function as pf
+import pickle
 
 function = pf.ParamFunction()  # Inicializacion
 
@@ -10,8 +11,12 @@ n = 1  # n dimensions
 lb = np.array([0.27])
 ub = np.array([0.32])
 
-mvalue, x_out, error = bayesopt.optimize(function.avoidance_trial, n, lb, ub, params)
+mvalue, x_out, error = bayesopt.optimize(function.avoidance_tray_circular, n, lb, ub, params)
 
 print("Result", mvalue, "at", x_out)
+
+listas = function.return_lists()
+
+pickle.dump(listas, open("listas_bayesopt_tray_circular.p", "wb"))
 
 function.shutdown()  # Apagado
