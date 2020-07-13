@@ -32,12 +32,27 @@ class InitTask(object):
         self.success = ProximitySensor('success')
 
 
+class Parameters(object):
+    def __init__(self):
+        self.time = 0
+        self.iteration = 1
+
+
+class Lists(object):
+    def __init__(self):
+        self.list_of_parameters = []
+        self.list_of_rewards = []
+        self.iterations = []
+
+
 class SlideBlockFunction(object):
     def __init__(self):
         self.pyrep = PyRep()
         self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=True)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.task = InitTask()
+        self.param = Parameters()
+        self.lists = Lists()
 
     def slide_block(self, slide_params: np.array):
         # Definición del objetivo final
@@ -56,7 +71,7 @@ class SlideBlockFunction(object):
         # Ejecución de la trayectoria
         self.pyrep.start()
 
-        time = 0
+        self.param.time = 0
         reward = 0
 
         done = False
@@ -74,17 +89,33 @@ class SlideBlockFunction(object):
                 while not done:
                     done = path.step()
                     self.pyrep.step()
-                    time += self.pyrep.get_simulation_timestep()
-                    print(self.robot.tip.get_position())
-
-                    distance_objective_3d = np.array(self.task.wp1.get_position() - self.task.block.get_position())
-                    distance_objective = np.linalg.norm(distance_objective_3d)
-
+                    self.param.time += self.pyrep.get_simulation_timestep()
+                    distance_objective = calc_distance(self.task.wp1.get_position(), self.task.block.get_position())
                     reward += math.exp(-distance_objective)
-            except ConfigurationPathError as e:
+            except ConfigurationPathError:
                 print('Could not find path')
                 reward = 0
                 return -reward
 
-            self.pyrep.stop()  # Stop the simulation
-            return -reward
+        self.pyrep.stop()  # Stop the simulation
+        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, -reward)
+        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, slide_params)
+        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
+        self.param.iteration += 1
+        return -reward
+
+    def clean_lists(self):
+        self.lists = Lists()
+
+    def return_lists(self):
+        return self.lists
+
+    def shutdown(self):
+        input('Press enter to finish ...')
+        self.pyrep.shutdown()  # Close the application
+
+
+def calc_distance(vector1: np.array, vector2: np.array):
+    distance_3d = np.array(vector1 - vector2)
+    distance = np.linalg.norm(distance_3d)
+    return distance
