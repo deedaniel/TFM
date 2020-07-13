@@ -7,7 +7,8 @@ from pyrep.objects.shape import Shape
 from pyrep.errors import ConfigurationPathError
 import math
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
-import matplotlib.pyplot as plt
+import pickle
+import sys
 
 DIR_PATH = dirname(abspath(__file__))
 TTT_FILE = 'scene_with_panda_2.ttt'
@@ -49,6 +50,14 @@ class Parameters(object):
         self.steps = 10
         self.circular_delta = math.pi / (self.steps - 1)  # 180 / (steps-1) grados para hacer semicircunferencia
         self.time = 0
+        self.iteration = 1
+
+
+class Lists(object):
+    def __init__(self):
+        self.list_of_parameters = []
+        self.list_of_rewards = []
+        self.iterations = []
 
 
 class ParamFunction(object):
@@ -60,6 +69,7 @@ class ParamFunction(object):
         self.target = Target()
         self.param = Parameters()
         self.waypoints = Waypoints()
+        self.lists = Lists()
 
     def avoidance_tray_circular(self, radius):
         self.pyrep.start()  # We start the simulation
@@ -131,41 +141,34 @@ class ParamFunction(object):
                 self.pyrep.step()
                 self.param.time += self.pyrep.get_simulation_timestep()
 
-        reward = (-(10 * (1 - self.obstacle.radius / radius)) ** 2 + 2) + 10 / self.param.time
+        reward = (-(20 * (1 - self.obstacle.radius / radius)) ** 2 + 2) + 10 / self.param.time
         self.pyrep.stop()  # Stop the simulation
+        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, radius)
+        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, -reward)
+        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
+        self.param.iteration += 1
         return -reward
 
     def avoidance_brute_force(self, radius_interval: list):
         radius_step = 0.005
-        list_of_radius = []
-        list_of_rewards = []
+        self.clean_lists()
         self.param.radius = radius_interval[0]
 
         while self.param.radius <= radius_interval[1]:
-            reward = self.avoidance_tray_circular(self.param.radius)
-            list_of_radius = np.append(list_of_radius, self.param.radius)
-            list_of_rewards = np.append(list_of_rewards, reward)
+            self.avoidance_tray_circular(self.param.radius)
             self.param.radius += radius_step
 
-        figure, ax = plt.subplots()
-        ax.plot(list_of_radius, list_of_rewards)
-        ax.set(xlabel='radius (m)', ylabel='reward', title='Reward vs radius')
-        ax.grid()
-        figure.savefig("plot1.png")
-        plt.show()
-        print('Done ...')
+        pickle.dump(self.lists, open("listas_brute_force.p", "wb"))
 
-    def tray_with_waypoints(self, wp_params: np.array):
-        # Definicion de los waypoints
-        pos1_rel = np.array([wp_params[0], wp_params[1], wp_params[2]])
-        pos1_abs = pos1_rel + self.obstacle.pos
-        waypoint1 = Dummy.create()
-        waypoint1.set_position(pos1_abs)
-
-        pos2_rel = np.array([wp_params[3], wp_params[4], wp_params[5]])
-        pos2_abs = pos2_rel + self.obstacle.pos
-        waypoint2 = Dummy.create()
-        waypoint2.set_position(pos2_abs)
+    def tray_with_waypoints(self, wp_params: np.array, coords: str):
+        if coords == 'cartesianas':
+            waypoint1, waypoint2 = self.get_waypoints_cart(wp_params)
+        elif coords == 'esfericas':
+            waypoint1, waypoint2 = self.get_waypoints_esf(wp_params)
+        else:
+            waypoint1, waypoint2 = [], []
+            print('Error al definir el tipo de coordenadas')
+            sys.exit()
 
         # Definición de la trayectoria
         tray = [self.waypoints.initial_pos, waypoint1, waypoint2, self.waypoints.final_pos]
@@ -189,19 +192,65 @@ class ParamFunction(object):
                     distance_obstacle = calc_distance(self.obstacle.pos, self.robot.tip.get_position())
                     distance_objective = calc_distance(self.waypoints.final_pos.get_position(),
                                                        self.robot.tip.get_position())
-                    cost += 0.1 * math.exp(-50 * (distance_obstacle - 0.3)) + math.exp(distance_objective)
-            except ConfigurationPathError as e:
+                    cost += 0.1 * math.exp(-20 * (distance_obstacle - 0.3)) + 0.8 * math.exp(distance_objective)
+            except ConfigurationPathError:
                 cost = 400
-                print(cost)
                 return cost
 
         self.pyrep.stop()
-        print(cost)
+        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, wp_params)
+        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, cost)
+        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
+        self.param.iteration += 1
         return cost
 
     def shutdown(self):
         input('Press enter to finish ...')
         self.pyrep.shutdown()  # Close the application
+
+    def clean_lists(self):
+        self.lists = Lists()
+
+    def return_lists(self):
+        return self.lists
+
+    def get_waypoints_cart(self, wp_params: np.array):
+        pos1_rel = np.array([wp_params[0], wp_params[1], wp_params[2]])
+        pos1_abs = pos1_rel + self.obstacle.pos
+        waypoint1 = Dummy.create()
+        waypoint1.set_position(pos1_abs)
+
+        pos2_rel = np.array([wp_params[3], wp_params[4], wp_params[5]])
+        pos2_abs = pos2_rel + self.obstacle.pos
+        waypoint2 = Dummy.create()
+        waypoint2.set_position(pos2_abs)
+
+        return waypoint1, waypoint2
+
+    def get_waypoints_esf(self, wp_params: np.array):
+        radio1 = wp_params[0]
+        tita1 = wp_params[1]
+        phi1 = wp_params[2]
+        pos1_rel = np.array([radio1*math.sin(tita1)*math.cos(phi1),
+                             radio1*math.sin(tita1)*math.sin(phi1),
+                             radio1*math.cos(tita1)])
+        print(pos1_rel)
+        pos1_abs = pos1_rel + self.waypoints.initial_pos.get_position()
+        waypoint1 = Dummy.create()
+        waypoint1.set_position(pos1_abs)
+
+        radio2 = wp_params[3]
+        tita2 = wp_params[4]
+        phi2 = wp_params[5]
+        pos2_rel = np.array([radio2*math.sin(tita2)*math.cos(phi2),
+                             radio2*math.sin(tita2)*math.sin(phi2),
+                             radio2*math.cos(tita2)])
+        print(pos2_rel)
+        pos2_abs = pos2_rel + pos1_abs
+        waypoint2 = Dummy.create()
+        waypoint2.set_position(pos2_abs)
+
+        return waypoint1, waypoint2
 
 
 def calc_distance(vector1: np.array, vector2: np.array):
