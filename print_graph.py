@@ -1,9 +1,8 @@
 import pickle
 import numpy as np
-import param_function as pf
 import matplotlib.pyplot as plt
 
-file = "listas_bayesopt_tray_circular.p"
+file = "listas_bayesopt_waypoints.p"
 listas = pickle.load(open(file, "rb"))
 
 best_reward = 10000

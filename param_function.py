@@ -51,6 +51,7 @@ class Parameters(object):
         self.circular_delta = math.pi / (self.steps - 1)  # 180 / (steps-1) grados para hacer semicircunferencia
         self.time = 0
         self.iteration = 1
+        self.coords = 'cartesianas'
 
 
 class Lists(object):
@@ -160,10 +161,10 @@ class ParamFunction(object):
 
         pickle.dump(self.lists, open("listas_brute_force.p", "wb"))
 
-    def tray_with_waypoints(self, wp_params: np.array, coords: str):
-        if coords == 'cartesianas':
+    def tray_with_waypoints(self, wp_params: np.array):
+        if self.param.coords == 'cartesianas':
             waypoint1, waypoint2 = self.get_waypoints_cart(wp_params)
-        elif coords == 'esfericas':
+        elif self.param.coords == 'esfericas':
             waypoint1, waypoint2 = self.get_waypoints_esf(wp_params)
         else:
             waypoint1, waypoint2 = [], []
@@ -195,7 +196,6 @@ class ParamFunction(object):
                     cost += 0.1 * math.exp(-20 * (distance_obstacle - 0.3)) + 0.8 * math.exp(distance_objective)
             except ConfigurationPathError:
                 cost = 400
-                return cost
 
         self.pyrep.stop()
         self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, wp_params)
