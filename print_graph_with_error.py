@@ -7,14 +7,14 @@ import math
 file = "listas_bayesopt_waypoints.p"
 listas = pickle.load(open(file, "rb"))
 
-n_iteraciones = len(listas[0].iterations)
+n_iteraciones = len(listas[0].list_of_rewards)
 n_experimentos = len(listas)
 
 best_reward = 1000
 lists_of_best_rewards = np.zeros((n_iteraciones, n_experimentos))
 list_of_mean_reward = []
 list_of_intervals = []
-list_of_iterations = listas[0].iterations
+list_of_iterations = []
 
 for i in range(n_iteraciones):
     for j in range(n_experimentos):
@@ -32,6 +32,7 @@ for i in range(n_iteraciones):
 
     list_of_mean_reward.append(mean_reward)
     list_of_intervals.append(interval)
+    list_of_iterations.append(i+1)
 
 figure, ax = plt.subplots()
 ax.errorbar(list_of_iterations, list_of_mean_reward, yerr=list_of_intervals)

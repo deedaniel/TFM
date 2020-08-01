@@ -64,7 +64,7 @@ class Lists(object):
 class ParamFunction(object):
     def __init__(self):
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=True)
+        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=False)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.obstacle = Obstacle()
         self.target = Target()
@@ -193,7 +193,7 @@ class ParamFunction(object):
                     distance_obstacle = calc_distance(self.obstacle.pos, self.robot.tip.get_position())
                     distance_objective = calc_distance(self.waypoints.final_pos.get_position(),
                                                        self.robot.tip.get_position())
-                    cost += 0.1 * math.exp(-20 * (distance_obstacle - 0.3)) + 0.8 * math.exp(distance_objective)
+                    cost += 0.1*np.exp(-10*(distance_obstacle - 0.3)) + 0.2*distance_objective**2
             except ConfigurationPathError:
                 cost = 400
 
@@ -205,7 +205,6 @@ class ParamFunction(object):
         return cost
 
     def shutdown(self):
-        input('Press enter to finish ...')
         self.pyrep.shutdown()  # Close the application
 
     def clean_lists(self):
