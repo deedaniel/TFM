@@ -8,7 +8,6 @@ from pyrep.objects.proximity_sensor import ProximitySensor
 from pyrep.errors import ConfigurationPathError
 import math
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
-import matplotlib.pyplot as plt
 
 DIR_PATH = dirname(abspath(__file__))
 TTT_FILE = 'slide_block.ttt'

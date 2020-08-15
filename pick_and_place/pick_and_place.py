@@ -89,6 +89,7 @@ for pos in tray:
                 done = gripper.actuate(1, velocity=0.04)
                 pr.step()
             release = robot.gripper.release()
+            print(release)
     except ConfigurationPathError as e:
         reward = -40
         print('Could not find path')
