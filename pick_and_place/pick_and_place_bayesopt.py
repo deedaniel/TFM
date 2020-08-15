@@ -9,7 +9,7 @@ n = 6  # n dimensions
 lb = np.array([-0.3, -0.3, 0, -0.3, -0.3, 0])
 ub = np.array([0.3, 0.3, 0.2, 0.3, 0.3, 0.2])
 
-params = {'n_iterations': 20,
+params = {'n_iterations': 500,
           'n_iter_relearn': 10,
           'n_init_samples': 2*n}
 
