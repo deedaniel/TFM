@@ -1,10 +1,11 @@
 from scipy.optimize import differential_evolution
-import pick_and_place_function as pf
+import numpy as np
+import slide_block_function as sbf
 import pickle
 
-function = pf.PickAndPlace()  # Inicializacion
+function = sbf.SlideBlock()  # Inicializacion
 
-bounds = [(-0.3, 0.3), (-0.3, 0.3), (0.0, 0.2), (-0.3, 0.3), (-0.3, 0.3), (0.0, 0.2)]
+bounds = [(-0.3, 0.3), (-0.3, 0.3), (0.0, 0.2), (0.05, 0.5), (0.0, np.pi)]
 
 maxiter = 500
 popsize = 1
@@ -14,7 +15,7 @@ n_experimentos = 5
 
 for i in range(n_experimentos):
     function.clean_lists()
-    result = differential_evolution(function.tray_with_waypoints, bounds, maxiter=maxiter, popsize=popsize)
+    result = differential_evolution(function.slide_block, bounds, maxiter=maxiter, popsize=popsize)
     listas_optimizacion = function.return_lists()
     listas.append(listas_optimizacion)
 

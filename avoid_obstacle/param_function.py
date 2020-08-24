@@ -64,7 +64,7 @@ class Lists(object):
 class ParamFunction(object):
     def __init__(self):
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=False)
+        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=True)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.obstacle = Obstacle()
         self.target = Target()
@@ -212,6 +212,12 @@ class ParamFunction(object):
 
     def return_lists(self):
         return self.lists
+
+    def set_coords(self, coord: str):
+        self.param.coords = coord
+
+    def get_coords(self):
+        return self.param.coords
 
     def get_waypoints_cart(self, wp_params: np.array):
         pos1_rel = np.array([wp_params[0], wp_params[1], wp_params[2]])

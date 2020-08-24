@@ -45,16 +45,16 @@ task = InitTask()
 
 class Parameters(object):
     def __init__(self):
-        self.original_pos = task.joint.get_position()
+        self.original_pos = task.joint.get_joint_position()
 
 
 param = Parameters()
 print(param.original_pos)
 
 # Declaración y definición de los parametros entrada: distancia y orientación
-push_pos_rel = np.array([0, 0, 0])
+push_pos_rel = np.array([0, 0, 0.01])
 
-push_pos = task.joint.get_position() + push_pos_rel
+push_pos = task.target_button.get_position() + push_pos_rel
 
 task.wp1.set_position(push_pos)
 
@@ -80,14 +80,11 @@ for pos in tray:
         while not done:
             done = path.step()
             pr.step()
-        reward = 2000 * (np.linalg.norm(task.joint.get_position() - param.original_pos) - 0.003)
+        reward = 2000 * np.abs(np.linalg.norm(task.joint.get_joint_position() - param.original_pos) - 0.003)
     except ConfigurationPathError as e:
         reward = -40
         print('Could not find path')
         exit()
-
-print(task.joint.get_position())
-
 
 pr.stop()
 pr.shutdown()

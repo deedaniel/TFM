@@ -4,13 +4,13 @@ from pyrep import PyRep
 from pyrep.robots.arms.panda import Panda
 from pyrep.objects.dummy import Dummy
 from pyrep.objects.shape import Shape
-from pyrep.objects.proximity_sensor import ProximitySensor
+from pyrep.objects.joint import Joint
 from pyrep.errors import ConfigurationPathError
 import math
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 
 DIR_PATH = dirname(abspath(__file__))
-TTT_FILE = 'slide_block.ttt'
+TTT_FILE = 'push_button.ttt'
 
 
 class Robot(object):  # Estructura del robot
@@ -24,18 +24,19 @@ class Robot(object):  # Estructura del robot
 # Declaración y definición de los elementos de la tarea
 class InitTask(object):
     def __init__(self):
-        self.block = Shape('block')
+        self.target_button = Shape('push_button_target')
+        self.target_topPlate = Shape('target_button_topPlate')
+        self.target_wrap = Shape('target_button_wrap')
         self.wp0 = Dummy('waypoint0')
         self.wp1 = Dummy('waypoint1')
-        self.wp2 = Dummy('waypoint2')
-        self.target = Shape('target')
-        self.success = ProximitySensor('success')
+        self.joint = Joint('target_button_joint')
 
 
 class Parameters(object):
     def __init__(self):
         self.time = 0
         self.iteration = 1
+        self.original_pos = 0
 
 
 class Lists(object):
@@ -45,42 +46,31 @@ class Lists(object):
         self.iterations = []
 
 
-class SlideBlock(object):
+class PushButton(object):
     def __init__(self):
         self.pyrep = PyRep()
         self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=False)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.task = InitTask()
         self.param = Parameters()
+        self.param.original_pos = self.task.joint.get_joint_position()
         self.lists = Lists()
 
-    def slide_block(self, slide_params: np.array):
+    def push_button(self, push_params: np.array):
         # Definición del punto de empuje
-        wp1_pos_rel = np.array([slide_params[0], slide_params[1], slide_params[2]])
-        wp1_pos_abs = wp1_pos_rel + self.task.wp0.get_position()
-        self.task.wp1.set_position(wp1_pos_abs)
+        push_pos_rel = np.array([push_params[0], push_params[1], push_params[2]])
+        push_pos = self.task.target_button.get_position() + push_pos_rel
+        self.task.wp1.set_position(push_pos)
 
-        # Definición del objetivo final
-        distance = slide_params[3]
-        orientation = slide_params[4]
-
-        final_pos_rel = np.array([distance * math.sin(orientation), distance * math.cos(orientation), 0])
-        final_pos_abs = final_pos_rel + self.task.wp1.get_position()
-
-        final_wp = Dummy.create()
-        final_wp.set_position(final_pos_abs)
-        final_wp.set_orientation(self.task.wp0.get_orientation())
-
-        tray = [self.task.wp0, self.task.wp1, final_wp]
+        tray = [self.task.wp0, self.task.wp1]
 
         # Ejecución de la trayectoria
         self.pyrep.start()
-
         self.param.time = 0
         reward = 0
 
         done = False
-        # Cerrar la pinza para poder empujar el objeto.
+        # Cerrar la pinza para poder pretar el boton.
         while not done:
             done = self.robot.gripper.actuate(0, velocity=0.05)
             self.pyrep.step()
@@ -94,17 +84,16 @@ class SlideBlock(object):
                 while not done:
                     done = path.step()
                     self.pyrep.step()
-                    self.param.time += self.pyrep.get_simulation_timestep()
-                    distance_objective = calc_distance(self.task.wp2.get_position(), self.task.block.get_position())
-                    reward += math.exp(-distance_objective)
+                reward = 2000 * np.abs(np.linalg.norm(self.task.joint.get_joint_position()- self.param.original_pos)
+                                       - 0.003)
             except ConfigurationPathError:
                 print('Could not find path')
-                reward = 0
+                reward = -40
                 return -reward
 
         self.pyrep.stop()  # Stop the simulation
         self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, -reward)
-        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, slide_params)
+        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, push_params)
         self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
         self.param.iteration += 1
         return -reward
