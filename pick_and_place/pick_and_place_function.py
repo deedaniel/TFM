@@ -31,6 +31,8 @@ class InitTask(object):
         self.wp1 = Dummy('waypoint1')
         self.wp2 = Dummy('waypoint2')
         self.wp3 = Dummy('waypoint3')
+        self.pick_wp = Dummy('pick')
+        self.place_wp = Dummy('place')
         self.success = ProximitySensor('success')
 
 
@@ -50,7 +52,7 @@ class Lists(object):
 class PickAndPlace(object):
     def __init__(self):
         self.pr = PyRep()
-        self.pr.launch(join(DIR_PATH, TTT_FILE), headless=True)
+        self.pr.launch(join(DIR_PATH, TTT_FILE), headless=False)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.task = InitTask()
         self.param = Parameters()
@@ -61,13 +63,14 @@ class PickAndPlace(object):
         pick_pos_rel = np.array([wp_params[0], wp_params[1], wp_params[2]])
         place_pos_rel = np.array([wp_params[3], wp_params[4], wp_params[5]])
 
-        pick_pos = self.task.pick.get_position() + pick_pos_rel
-        place_pos = self.task.place.get_position() + place_pos_rel
+        pick_pos = self.task.wp0.get_position() + pick_pos_rel
+        place_pos = self.task.wp2.get_position() + place_pos_rel
 
         self.task.wp1.set_position(pick_pos)
         self.task.wp3.set_position(place_pos)
+        print(self.task.wp3.get_position())
 
-        tray = [self.task.wp0, self.task.wp1, self.task.wp2, self.task.wp3]
+        tray = [self.task.wp0, self.task.wp1, self.task.wp0, self.task.wp2, self.task.wp3, self.task.wp2]
 
         # Ejecución de la trayectoria
         self.pr.start()
@@ -82,10 +85,6 @@ class PickAndPlace(object):
                 while not done:
                     done = path.step()
                     self.pr.step()
-
-                    distance_objective = calc_distance(self.task.place.get_position(), self.task.block.get_position())
-
-                    reward += -distance_objective ** 2
 
                 if pos == self.task.wp1:
                     done = False
@@ -105,9 +104,14 @@ class PickAndPlace(object):
                 reward = -85
                 print('Could not find path')
 
+        distance_pick = calc_distance(self.task.wp1.get_position(), self.task.pick_wp.get_position())
+        distance_place = calc_distance(self.task.wp3.get_position(), self.task.place_wp.get_position())
+
+        reward += (-distance_pick ** 2) + (-distance_place ** 2)
+
         self.pr.stop()  # Stop the simulation
         self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, wp_params)
-        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, -reward)
+        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, reward)
         self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
         self.param.iteration += 1
         return -reward
