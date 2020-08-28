@@ -8,7 +8,7 @@ function = pf.ParamFunction()  # Inicializacion
 # radius = [0.27, 0.32]
 # function.avoidance_brute_force(radius_interval=radius)  # Ejecucion
 
-wp_params = np.array([0.11279,-0.165146,0.34462,0.03865,0.375,0.327896])
+wp_params = np.array([0, -0.2, 0.3, 0, 0.2, 0.3])
 reward = function.tray_with_waypoints(wp_params)
 print(reward)
 

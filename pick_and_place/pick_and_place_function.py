@@ -93,6 +93,8 @@ class PickAndPlace(object):
                         done = self.robot.gripper.actuate(0, velocity=0.04)
                         self.pr.step()
                     self.robot.gripper.grasp(self.task.block)
+                    distance_pick = calc_distance(self.robot.tip.get_position(), self.task.pick_wp.get_position())
+                    reward -= distance_pick ** 2
                 elif pos == self.task.wp3:
                     done = False
                     # Open the gripper halfway at a velocity of 0.04.
@@ -100,14 +102,11 @@ class PickAndPlace(object):
                         done = self.robot.gripper.actuate(1, velocity=0.04)
                         self.pr.step()
                     self.robot.gripper.release()
+                    distance_place = calc_distance(self.task.block.get_position(), self.task.place_wp.get_position())
+                    reward -= distance_place ** 2
             except ConfigurationPathError as e:
                 reward = -85
                 print('Could not find path')
-
-        distance_pick = calc_distance(self.task.wp1.get_position(), self.task.pick_wp.get_position())
-        distance_place = calc_distance(self.task.wp3.get_position(), self.task.place_wp.get_position())
-
-        reward += (-distance_pick ** 2) + (-distance_place ** 2)
 
         self.pr.stop()  # Stop the simulation
         self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, wp_params)

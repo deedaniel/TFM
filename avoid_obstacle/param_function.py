@@ -64,7 +64,7 @@ class Lists(object):
 class ParamFunction(object):
     def __init__(self):
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=True)
+        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=False)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.obstacle = Obstacle()
         self.target = Target()

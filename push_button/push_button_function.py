@@ -84,7 +84,7 @@ class PushButton(object):
                 while not done:
                     done = path.step()
                     self.pyrep.step()
-                reward = 2000 * np.abs(np.linalg.norm(self.task.joint.get_joint_position()- self.param.original_pos)
+                reward = 2000 * np.abs(np.linalg.norm(self.task.joint.get_joint_position() - self.param.original_pos)
                                        - 0.003)
             except ConfigurationPathError:
                 print('Could not find path')
