@@ -52,7 +52,7 @@ class Lists(object):
 class PickAndPlace(object):
     def __init__(self):
         self.pr = PyRep()
-        self.pr.launch(join(DIR_PATH, TTT_FILE), headless=False)
+        self.pr.launch(join(DIR_PATH, TTT_FILE), headless=True)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.task = InitTask()
         self.param = Parameters()
@@ -94,7 +94,7 @@ class PickAndPlace(object):
                         self.pr.step()
                     self.robot.gripper.grasp(self.task.block)
                     distance_pick = calc_distance(self.robot.tip.get_position(), self.task.pick_wp.get_position())
-                    reward -= distance_pick ** 2
+                    reward -= 400 * distance_pick ** 2
                 elif pos == self.task.wp3:
                     done = False
                     # Open the gripper halfway at a velocity of 0.04.
@@ -103,7 +103,7 @@ class PickAndPlace(object):
                         self.pr.step()
                     self.robot.gripper.release()
                     distance_place = calc_distance(self.task.block.get_position(), self.task.place_wp.get_position())
-                    reward -= distance_place ** 2
+                    reward -= 400 * distance_place ** 2
             except ConfigurationPathError as e:
                 reward = -85
                 print('Could not find path')

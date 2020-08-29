@@ -4,7 +4,7 @@ import pickle
 
 function = pf.PickAndPlace()  # Inicializacion
 
-bounds = [(-0.3, 0.3), (-0.3, 0.3), (0.0, 0.2), (-0.3, 0.3), (-0.3, 0.3), (0.0, 0.2)]
+bounds = [(-0.15, 0.15), (-0.15, 0.15), (-0.2, 0.0), (-0.1, 0.1), (-0.1, 0.1), (-0.2, 0.0)]
 
 maxiter = 500
 popsize = 1
@@ -14,7 +14,8 @@ n_experimentos = 5
 
 for i in range(n_experimentos):
     function.clean_lists()
-    result = differential_evolution(function.tray_with_waypoints, bounds, maxiter=maxiter, popsize=popsize)
+    result = differential_evolution(function.pick_and_place, bounds, maxiter=maxiter, popsize=popsize)
+    print(result)
     listas_optimizacion = function.return_lists()
     listas.append(listas_optimizacion)
 

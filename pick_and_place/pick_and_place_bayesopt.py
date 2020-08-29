@@ -6,8 +6,8 @@ import pickle
 function = pf.PickAndPlace()  # Inicializacion
 
 n = 6  # n dimensions
-lb = np.array([-0.3, -0.3, 0, -0.3, -0.3, 0])
-ub = np.array([0.3, 0.3, 0.2, 0.3, 0.3, 0.2])
+lb = np.array([-0.15, -0.15, -0.25, -0.1, -0.1, -0.25])
+ub = np.array([0.15, 0.15, 0.0, 0.1, 0.1, 0.0])
 
 params = {'n_iterations': 500,
           'n_iter_relearn': 10,
