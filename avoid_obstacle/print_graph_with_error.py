@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as sp
 import math
 
-file = "listas_bayesopt_waypoints.p"
+file = "listas_bayesopt_waypoints_esfericas.p"
 listas = pickle.load(open(file, "rb"))
 
 n_iteraciones = len(listas[0].list_of_rewards)
@@ -31,6 +31,8 @@ plt.fill(np.concatenate([it, it[::-1]]),
          np.concatenate([res_mean + t_limits[0] * res_std,
                          (res_mean + t_limits[1] * res_std)[::-1]]),
          alpha=.3)
-
-plt.savefig("it_rew_bayesopt.png")
+plt.ylabel(ylabel='Recompensa')
+plt.xlabel(xlabel='Iteraciones')
+plt.title(label='Recompensa frente iteraciones')
+plt.savefig("it_rew_bayesopt_esfericas.png")
 plt.show()
