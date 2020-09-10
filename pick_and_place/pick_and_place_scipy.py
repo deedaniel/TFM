@@ -4,9 +4,9 @@ import pickle
 
 function = pf.PickAndPlace()  # Inicializacion
 
-bounds = [(-0.15, 0.15), (-0.15, 0.15), (-0.2, 0.0), (-0.1, 0.1), (-0.1, 0.1), (-0.2, 0.0)]
+bounds = [(-0.15, 0.15), (-0.15, 0.15), (-0.25, -0.15), (-0.1, 0.1), (-0.1, 0.1), (-0.25, -0.15)]
 
-maxiter = 500
+maxiter = 200
 popsize = 1
 
 listas = []

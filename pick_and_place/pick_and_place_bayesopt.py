@@ -7,11 +7,12 @@ function = pf.PickAndPlace()  # Inicializacion
 
 n = 6  # n dimensions
 lb = np.array([-0.15, -0.15, -0.25, -0.1, -0.1, -0.25])
-ub = np.array([0.15, 0.15, 0.0, 0.1, 0.1, 0.0])
+ub = np.array([0.15, 0.15, -0.14, 0.1, 0.1, -0.14])
 
-params = {'n_iterations': 500,
-          'n_iter_relearn': 10,
-          'n_init_samples': 2*n}
+params = {'n_iterations': 250,
+          'n_iter_relearn': 5,
+          'n_init_samples': 2*n,
+          'l_type': 'L_MCMC'}
 
 listas = []
 n_experimentos = 5
