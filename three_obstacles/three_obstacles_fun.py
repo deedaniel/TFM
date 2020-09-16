@@ -27,7 +27,7 @@ class InitTask(object):  # Estructura del obstaculo
         self.obstacle0 = Shape('Cylinder')
         self.obstacle1 = Shape('Cylinder0')
         self.obstacle2 = Shape('Cylinder1')
-        self.sensor = ProximitySensor('Panda_sensingNose')
+        self.sensor = ProximitySensor('Panda_sensor')
 
 
 class Parameters(object):
@@ -62,10 +62,12 @@ class ThreeObstacles(object):
         self.pyrep.start()
         self.param.time = 0
         cost = 0
+        pasos = 0
         for pos in tray:
             try:
                 path = self.robot.arm.get_path(position=pos.get_position(),
-                                               euler=[0, np.radians(180), 0])
+                                               euler=[0, np.radians(180), 0],
+                                               ignore_collisions=True)
                 # Step the simulation and advance the agent along the path
                 done = False
                 while not done:
@@ -73,18 +75,20 @@ class ThreeObstacles(object):
                     self.pyrep.step()
                     self.param.time += self.pyrep.get_simulation_timestep()
 
-                    distance_obstacle0 = self.task.sensor.check_distance(self.task.obstacle0)
-                    distance_obstacle1 = self.task.sensor.check_distance(self.task.obstacle1)
-                    distance_obstacle2 = self.task.sensor.check_distance(self.task.obstacle2)
+                    distance_obstacle0 = self.robot.gripper.check_distance(self.task.obstacle0)
+                    distance_obstacle1 = self.robot.gripper.check_distance(self.task.obstacle1)
+                    distance_obstacle2 = self.robot.gripper.check_distance(self.task.obstacle2)
 
                     print(distance_obstacle0, distance_obstacle1, distance_obstacle2)
 
-                    distance_objective = calc_distance(self.task.final_pos.get_position(),
-                                                       self.robot.tip.get_position())
-                    cost += (0.1 * np.exp(-10 * (distance_obstacle0 - 0.3)) +
-                             0.1 * np.exp(-10 * (distance_obstacle1 - 0.3)) +
-                             0.1 * np.exp(-10 * (distance_obstacle2 - 0.3)) +
-                             0.2 * distance_objective ** 2)
+                    distance_objective = self.robot.tip.check_distance(self.task.final_pos)
+
+                    cost += (#20 * np.exp(-500 * distance_obstacle0) +
+                             #20 * np.exp(-500 * distance_obstacle1) +
+                             #20 * np.exp(-500 * distance_obstacle2) +
+                             2 * distance_objective**2
+                             )
+                    pasos+=1
             except ConfigurationPathError:
                 cost = 400
 
@@ -93,6 +97,7 @@ class ThreeObstacles(object):
         self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, cost)
         self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
         self.param.iteration += 1
+        print(pasos)
         return cost
 
     def shutdown(self):
@@ -107,20 +112,18 @@ class ThreeObstacles(object):
     def get_waypoints_esf(self, wp_params: np.array):
         radio1 = wp_params[0]
         tita1 = wp_params[1]
-        phi1 = wp_params[2]
-        pos1_rel = np.array([radio1 * np.sin(tita1) * np.cos(phi1),
-                             radio1 * np.sin(tita1) * np.sin(phi1),
-                             radio1 * np.cos(tita1)])
+        pos1_rel = np.array([radio1 * np.sin(tita1),
+                             radio1 * np.cos(tita1),
+                             0])
         pos1_abs = pos1_rel + self.task.initial_pos.get_position()
         waypoint1 = Dummy.create()
         waypoint1.set_position(pos1_abs)
 
-        radio2 = wp_params[3]
-        tita2 = wp_params[4]
-        phi2 = wp_params[5]
-        pos2_rel = np.array([radio2 * np.sin(tita2) * np.cos(phi2),
-                             radio2 * np.sin(tita2) * np.sin(phi2),
-                             radio2 * np.cos(tita2)])
+        radio2 = wp_params[2]
+        tita2 = wp_params[3]
+        pos2_rel = np.array([radio2 * np.sin(tita2),
+                             radio2 * np.cos(tita2),
+                             0])
         pos2_abs = pos2_rel + pos1_abs
         waypoint2 = Dummy.create()
         waypoint2.set_position(pos2_abs)

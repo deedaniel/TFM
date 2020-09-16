@@ -1,20 +1,27 @@
 from scipy.optimize import differential_evolution
+import numpy as np
 import param_function as pf
 import pickle
 
 function = pf.ParamFunction()  # Inicializacion
 
-bounds = [(-0.4, 0.4), (-0.375, 0.375), (-0.1, 0.4), (-0.4, 0.4), (-0.375, 0.375), (-0.1, 0.4)]
+bounds = [(0.1, 0.5), (0.0, np.pi), (0.0, np.pi), (0.1, 0.5), (0.0, np.pi), (0.0, np.pi)]
 
-maxiter = 1000
+function.set_coords('esfericas')
+
+maxiter = 500
 popsize = 1
 
-result = differential_evolution(function.tray_with_waypoints, bounds, maxiter=maxiter, popsize=popsize)
-print('Result:', result.x)
-print('Function:', result.fun)
+listas = []
+n_experimentos = 5
 
-listas = function.return_lists()
+for i in range(n_experimentos):
+    function.clean_lists()
+    result = differential_evolution(function.tray_with_waypoints, bounds, maxiter=maxiter, popsize=popsize)
+    print('Result:', result.x)
+    listas_optimizacion = function.return_lists()
+    listas.append(listas_optimizacion)
 
-pickle.dump(listas, open("listas_scipy_waypoints.p", "wb"))
+pickle.dump(listas, open("listas_scipy_waypoints_esfericas.p", "wb"))
 
 function.shutdown()  # Apagado

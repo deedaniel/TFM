@@ -5,7 +5,6 @@ from pyrep.robots.arms.panda import Panda
 from pyrep.objects.dummy import Dummy
 from pyrep.objects.shape import Shape
 from pyrep.errors import ConfigurationPathError
-import math
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 import pickle
 import sys
@@ -48,7 +47,7 @@ class Parameters(object):
         # Parametros de evitacion: radio y numero de pasos para hacer la trayectoria
         self.radius = 0.3
         self.steps = 10
-        self.circular_delta = math.pi / (self.steps - 1)  # 180 / (steps-1) grados para hacer semicircunferencia
+        self.circular_delta = np.pi / (self.steps - 1)  # 180 / (steps-1) grados para hacer semicircunferencia
         self.time = 0
         self.iteration = 1
         self.coords = 'cartesianas'
@@ -64,7 +63,7 @@ class Lists(object):
 class ParamFunction(object):
     def __init__(self):
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=False)
+        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=True)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.obstacle = Obstacle()
         self.target = Target()
@@ -80,7 +79,7 @@ class ParamFunction(object):
         # We try to get a path to the initial target of the path
         try:
             path = self.robot.arm.get_path(position=self.target.pos,
-                                           euler=[0, math.radians(180), 0])
+                                           euler=[0, np.radians(180), 0])
 
             # We execute the path
             done = False
@@ -103,7 +102,7 @@ class ParamFunction(object):
 
             try:
                 path = self.robot.arm.get_path(position=self.target.pos,
-                                               euler=[0, math.radians(180), 0],
+                                               euler=[0, np.radians(180), 0],
                                                ignore_collisions=True)
             except ConfigurationPathError:
                 print('Could not find path')
@@ -123,13 +122,13 @@ class ParamFunction(object):
         for step in range(self.param.steps):
             # Calculate the next target
             next_pos = self.obstacle.pos + np.array([0,
-                                                     -radius * math.cos(step * self.param.circular_delta),
-                                                     radius * math.sin(step * self.param.circular_delta)])
+                                                     -radius * np.cos(step * self.param.circular_delta),
+                                                     radius * np.sin(step * self.param.circular_delta)])
             self.target.pos = next_pos
 
             try:
                 path = self.robot.arm.get_path(position=self.target.pos,
-                                               euler=[0, math.radians(180), 0],
+                                               euler=[0, np.radians(180), 0],
                                                ignore_collisions=True)
             except ConfigurationPathError:
                 print('Could not find path')
@@ -182,7 +181,7 @@ class ParamFunction(object):
         for pos in tray:
             try:
                 path = self.robot.arm.get_path(position=pos.get_position(),
-                                               euler=[0, math.radians(180), 0])
+                                               euler=[0, np.radians(180), 0])
                 # Step the simulation and advance the agent along the path
                 done = False
                 while not done:
@@ -202,6 +201,7 @@ class ParamFunction(object):
         self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, cost)
         self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
         self.param.iteration += 1
+        print(cost)
         return cost
 
     def shutdown(self):
@@ -236,9 +236,9 @@ class ParamFunction(object):
         radio1 = wp_params[0]
         tita1 = wp_params[1]
         phi1 = wp_params[2]
-        pos1_rel = np.array([radio1*math.sin(tita1)*math.cos(phi1),
-                             radio1*math.sin(tita1)*math.sin(phi1),
-                             radio1*math.cos(tita1)])
+        pos1_rel = np.array([radio1*np.sin(tita1)*np.cos(phi1),
+                             radio1*np.sin(tita1)*np.sin(phi1),
+                             radio1*np.cos(tita1)])
         print(pos1_rel)
         pos1_abs = pos1_rel + self.waypoints.initial_pos.get_position()
         waypoint1 = Dummy.create()
@@ -247,9 +247,9 @@ class ParamFunction(object):
         radio2 = wp_params[3]
         tita2 = wp_params[4]
         phi2 = wp_params[5]
-        pos2_rel = np.array([radio2*math.sin(tita2)*math.cos(phi2),
-                             radio2*math.sin(tita2)*math.sin(phi2),
-                             radio2*math.cos(tita2)])
+        pos2_rel = np.array([radio2*np.sin(tita2)*np.cos(phi2),
+                             radio2*np.sin(tita2)*np.sin(phi2),
+                             radio2*np.cos(tita2)])
         print(pos2_rel)
         pos2_abs = pos2_rel + pos1_abs
         waypoint2 = Dummy.create()
