@@ -28,6 +28,8 @@ class InitTask(object):
         self.wp0 = Dummy('waypoint0')
         self.wp1 = Dummy('waypoint1')
         self.wp2 = Dummy('waypoint2')
+        self.slide_target = Dummy('slide_target')
+        self.target_wp = Dummy('target_wp')
         self.target = Shape('target')
         self.success = ProximitySensor('success')
 
@@ -48,7 +50,7 @@ class Lists(object):
 class SlideBlock(object):
     def __init__(self):
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=False)
+        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=True)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.task = InitTask()
         self.param = Parameters()
@@ -66,16 +68,12 @@ class SlideBlock(object):
 
         final_pos_rel = np.array([distance * math.sin(orientation), distance * math.cos(orientation), 0])
         final_pos_abs = final_pos_rel + self.task.wp1.get_position()
+        self.task.wp2.set_position(final_pos_abs)
 
-        final_wp = Dummy.create()
-        final_wp.set_position(final_pos_abs)
-        final_wp.set_orientation(self.task.wp0.get_orientation())
-
-        tray = [self.task.wp0, self.task.wp1, final_wp]
+        tray = [self.task.wp0, self.task.wp1, self.task.wp2]
 
         # Ejecución de la trayectoria
         self.pyrep.start()
-
         self.param.time = 0
         reward = 0
 
@@ -94,16 +92,19 @@ class SlideBlock(object):
                 while not done:
                     done = path.step()
                     self.pyrep.step()
-                    self.param.time += self.pyrep.get_simulation_timestep()
-                    distance_objective = calc_distance(self.task.wp2.get_position(), self.task.block.get_position())
-                    reward += math.exp(-distance_objective)
+
+                if pos == self.task.wp1:
+                    distance_slide = self.robot.tip.check_distance(self.task.slide_target)
+                    reward -= 400 * distance_slide ** 2
+                elif pos == self.task.wp2:
+                    distance_target = self.task.block.check_distance(self.task.target_wp)
+                    reward -= 400 * distance_target ** 2
             except ConfigurationPathError:
                 print('Could not find path')
-                reward = 0
-                return -reward
+                reward = -85
 
         self.pyrep.stop()  # Stop the simulation
-        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, -reward)
+        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, reward)
         self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, slide_params)
         self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
         self.param.iteration += 1

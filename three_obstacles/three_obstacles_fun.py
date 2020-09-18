@@ -62,7 +62,7 @@ class ThreeObstacles(object):
         self.pyrep.start()
         self.param.time = 0
         cost = 0
-        pasos = 0
+
         for pos in tray:
             try:
                 path = self.robot.arm.get_path(position=pos.get_position(),
@@ -79,16 +79,12 @@ class ThreeObstacles(object):
                     distance_obstacle1 = self.robot.gripper.check_distance(self.task.obstacle1)
                     distance_obstacle2 = self.robot.gripper.check_distance(self.task.obstacle2)
 
-                    print(distance_obstacle0, distance_obstacle1, distance_obstacle2)
-
                     distance_objective = self.robot.tip.check_distance(self.task.final_pos)
 
-                    cost += (#20 * np.exp(-500 * distance_obstacle0) +
-                             #20 * np.exp(-500 * distance_obstacle1) +
-                             #20 * np.exp(-500 * distance_obstacle2) +
-                             2 * distance_objective**2
-                             )
-                    pasos+=1
+                    cost += (20 * np.exp(-300 * distance_obstacle0) +
+                             20 * np.exp(-300 * distance_obstacle1) +
+                             20 * np.exp(-300 * distance_obstacle2) +
+                             0.5 * distance_objective**2)
             except ConfigurationPathError:
                 cost = 400
 
@@ -97,7 +93,6 @@ class ThreeObstacles(object):
         self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, cost)
         self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
         self.param.iteration += 1
-        print(pasos)
         return cost
 
     def shutdown(self):

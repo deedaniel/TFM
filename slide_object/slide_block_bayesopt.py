@@ -6,11 +6,11 @@ import pickle
 function = sbf.SlideBlock()  # Inicializacion
 
 n = 5  # n dimensions
-lb = np.array([-0.3, -0.3, 0, 0.05, 0])
-ub = np.array([0.3, 0.3, 0.2, 0.3, np.pi])
+lb = np.array([-0.2, 0.0, -0.25, 0.05, -np.pi/4])
+ub = np.array([0.2, 0.1, 0, 0.4, np.pi/4])
 
-params = {'n_iterations': 500,
-          'n_iter_relearn': 10,
+params = {'n_iterations': 250,
+          'n_iter_relearn': 5,
           'n_init_samples': 2*n}
 
 listas = []

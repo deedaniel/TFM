@@ -5,9 +5,9 @@ import pickle
 
 function = sbf.SlideBlock()  # Inicializacion
 
-bounds = [(-0.3, 0.3), (-0.3, 0.3), (0.0, 0.2), (0.05, 0.5), (0.0, np.pi)]
+bounds = [(-0.2, 0.2), (0, 0.2), (-0.25, 0.0), (0.05, 0.4), (-np.pi/4, np.pi/4)]
 
-maxiter = 500
+maxiter = 250
 popsize = 1
 
 listas = []

@@ -3,7 +3,7 @@ import slide_block_function as sb
 
 function = sb.SlideBlock()  # Inicializacion
 
-wp_params = np.array([0, 0.05, -0.15, 0.2, 0])
+wp_params = np.array([0, 0.066, -0.15, 0.2, -np.pi/4])
 reward = function.slide_block(wp_params)
 print(reward)
 

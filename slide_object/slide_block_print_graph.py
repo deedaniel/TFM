@@ -3,10 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as sp
 
-file1 = "listas_bayesopt_waypoints_esfericas.p"
+file1 = "listas_bayesopt_slideblock.p"
 resultados1 = pickle.load(open(file1, "rb"))
 
-file2 = "listas_scipy_waypoints_esfericas.p"
+file2 = "listas_scipy_slideblock.p"
 resultados2 = pickle.load(open(file2, "rb"))
 
 lista_de_resultados = [resultados1, resultados2]
