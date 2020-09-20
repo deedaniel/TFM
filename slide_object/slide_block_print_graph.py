@@ -21,7 +21,7 @@ for resultado in lista_de_resultados:
 
     for i in range(n_experimentos):
         for j in range(n_iteraciones):
-            lists_of_best_rewards[i, j] = np.min(resultado[i].list_of_rewards[:(j + 1)])
+            lists_of_best_rewards[i, j] = np.max(resultado[i].list_of_rewards[:(j + 1)])
 
     res = np.asarray(lists_of_best_rewards)
     res_mean = np.mean(lists_of_best_rewards, axis=0)

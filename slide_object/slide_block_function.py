@@ -103,6 +103,7 @@ class SlideBlock(object):
                 print('Could not find path')
                 reward = -85
 
+        print(self.param.iteration)
         self.pyrep.stop()  # Stop the simulation
         self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, reward)
         self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, slide_params)
@@ -112,6 +113,7 @@ class SlideBlock(object):
 
     def clean_lists(self):
         self.lists = Lists()
+        self.param.iteration = 1
 
     def return_lists(self):
         return self.lists

@@ -14,7 +14,7 @@ n_experimentos = 5
 
 for i in range(n_experimentos):
     function.clean_lists()
-    result = differential_evolution(function.pick_and_place, bounds, maxiter=maxiter, popsize=popsize)
+    result = differential_evolution(function.pick_and_place, bounds, maxiter=maxiter, popsize=popsize, disp=True)
     print(result)
     listas_optimizacion = function.return_lists()
     listas.append(listas_optimizacion)

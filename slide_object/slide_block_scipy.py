@@ -15,10 +15,11 @@ n_experimentos = 5
 
 for i in range(n_experimentos):
     function.clean_lists()
-    result = differential_evolution(function.slide_block, bounds, maxiter=maxiter, popsize=popsize)
+    result = differential_evolution(function.slide_block, bounds, maxiter=maxiter, popsize=popsize, disp=True)
+    print(result)
     listas_optimizacion = function.return_lists()
     listas.append(listas_optimizacion)
 
-pickle.dump(listas, open("listas_scipy_pickandplace.p", "wb"))
+pickle.dump(listas, open("listas_scipy_slideblock.p", "wb"))
 
 function.shutdown()  # Apagado
