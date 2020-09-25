@@ -34,26 +34,18 @@ class InitTask(object):
         self.success = ProximitySensor('success')
 
 
-class Parameters(object):
-    def __init__(self):
-        self.time = 0
-        self.iteration = 1
-
-
 class Lists(object):
     def __init__(self):
         self.list_of_parameters = []
         self.list_of_rewards = []
-        self.iterations = []
 
 
 class SlideBlock(object):
-    def __init__(self):
+    def __init__(self, headless_mode: bool):
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=True)
+        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=headless_mode)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.task = InitTask()
-        self.param = Parameters()
         self.lists = Lists()
 
     def slide_block(self, slide_params: np.array):
@@ -74,7 +66,6 @@ class SlideBlock(object):
 
         # Ejecución de la trayectoria
         self.pyrep.start()
-        self.param.time = 0
         reward = 0
 
         done = False
@@ -103,17 +94,13 @@ class SlideBlock(object):
                 print('Could not find path')
                 reward = -85
 
-        print(self.param.iteration)
         self.pyrep.stop()  # Stop the simulation
         self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, reward)
         self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, slide_params)
-        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
-        self.param.iteration += 1
         return -reward
 
     def clean_lists(self):
         self.lists = Lists()
-        self.param.iteration = 1
 
     def return_lists(self):
         return self.lists

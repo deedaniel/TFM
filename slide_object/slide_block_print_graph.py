@@ -16,12 +16,18 @@ etiqueta = ['bayesopt', 'differential evolution']
 for resultado in lista_de_resultados:
     n_iteraciones = len(resultado[0].list_of_rewards)
     n_experimentos = len(resultado)
+    # n_dimensiones = len(resultado[0].list_of_parameters[0])
+    # print(n_dimensiones)
 
     lists_of_best_rewards = np.zeros((n_experimentos, n_iteraciones))
+    # best_param = np.zeros((n_experimentos, n_dimensiones))
 
     for i in range(n_experimentos):
         for j in range(n_iteraciones):
             lists_of_best_rewards[i, j] = np.max(resultado[i].list_of_rewards[:(j + 1)])
+        # best_param[i] = resultado[i].list_of_parameters[np.argmin(resultado[i].list_of_rewards)]
+
+    # pickle.dump(best_param, open("param solucion " + etiqueta[lista_de_resultados.index(resultado)] + ".p", "wb"))
 
     res = np.asarray(lists_of_best_rewards)
     res_mean = np.mean(lists_of_best_rewards, axis=0)
@@ -40,5 +46,5 @@ plt.ylabel(ylabel='Recompensa')
 plt.xlabel(xlabel='Iteraciones')
 plt.title(label='Recompensa frente iteraciones')
 plt.legend(loc='lower right')
-plt.savefig("it_rew_waypoints_esfericas.png")
+plt.savefig("it_rew_slideblock.png")
 plt.show()

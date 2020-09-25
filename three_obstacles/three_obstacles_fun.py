@@ -30,26 +30,18 @@ class InitTask(object):  # Estructura del obstaculo
         self.sensor = ProximitySensor('Panda_sensor')
 
 
-class Parameters(object):
-    def __init__(self):
-        self.time = 0
-        self.iteration = 1
-
-
 class Lists(object):
     def __init__(self):
         self.list_of_parameters = []
         self.list_of_rewards = []
-        self.iterations = []
 
 
 class ThreeObstacles(object):
-    def __init__(self):
+    def __init__(self, headless_mode: bool):
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=False)
+        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=headless_mode)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.task = InitTask()
-        self.param = Parameters()
         self.lists = Lists()
 
     def avoidance_with_waypoints(self, wp_params: np.array):
@@ -58,10 +50,14 @@ class ThreeObstacles(object):
         # Definición de la trayectoria
         tray = [self.task.initial_pos, waypoint1, waypoint2, self.task.final_pos]
 
+        d_tray_1 = self.task.initial_pos.check_distance(waypoint1)
+        d_tray_2 = waypoint1.check_distance(waypoint2)
+        d_tray_3 = waypoint2.check_distance(self.task.final_pos)
+        d_tray = d_tray_1 + d_tray_2 + d_tray_3
+
         # Ejecución de la trayectoria
         self.pyrep.start()
-        self.param.time = 0
-        cost = 0
+        cost = 2 * d_tray ** 2
 
         for pos in tray:
             try:
@@ -73,26 +69,20 @@ class ThreeObstacles(object):
                 while not done:
                     done = path.step()
                     self.pyrep.step()
-                    self.param.time += self.pyrep.get_simulation_timestep()
 
                     distance_obstacle0 = self.robot.gripper.check_distance(self.task.obstacle0)
                     distance_obstacle1 = self.robot.gripper.check_distance(self.task.obstacle1)
                     distance_obstacle2 = self.robot.gripper.check_distance(self.task.obstacle2)
 
-                    distance_objective = self.robot.tip.check_distance(self.task.final_pos)
-
                     cost += (20 * np.exp(-300 * distance_obstacle0) +
                              20 * np.exp(-300 * distance_obstacle1) +
-                             20 * np.exp(-300 * distance_obstacle2) +
-                             0.5 * distance_objective**2)
+                             20 * np.exp(-300 * distance_obstacle2))
             except ConfigurationPathError:
                 cost = 400
 
         self.pyrep.stop()
-        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, wp_params)
-        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, cost)
-        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
-        self.param.iteration += 1
+        self.lists.list_of_parameters.append(list(wp_params))
+        self.lists.list_of_rewards.append(cost)
         return cost
 
     def shutdown(self):

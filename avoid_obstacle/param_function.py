@@ -49,7 +49,6 @@ class Parameters(object):
         self.steps = 10
         self.circular_delta = np.pi / (self.steps - 1)  # 180 / (steps-1) grados para hacer semicircunferencia
         self.time = 0
-        self.iteration = 1
         self.coords = 'cartesianas'
 
 
@@ -57,13 +56,12 @@ class Lists(object):
     def __init__(self):
         self.list_of_parameters = []
         self.list_of_rewards = []
-        self.iterations = []
 
 
 class ParamFunction(object):
-    def __init__(self):
+    def __init__(self, headless_mode: bool):
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=True)
+        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=headless_mode)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.obstacle = Obstacle()
         self.target = Target()
@@ -145,8 +143,6 @@ class ParamFunction(object):
         self.pyrep.stop()  # Stop the simulation
         self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, radius)
         self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, -reward)
-        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
-        self.param.iteration += 1
         return -reward
 
     def avoidance_brute_force(self, radius_interval: list):
@@ -197,11 +193,8 @@ class ParamFunction(object):
                 cost = 400
 
         self.pyrep.stop()
-        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, wp_params)
-        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, cost)
-        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
-        self.param.iteration += 1
-        print(cost)
+        self.lists.list_of_parameters.append(list(wp_params))
+        self.lists.list_of_rewards.append(cost)
         return cost
 
     def shutdown(self):
@@ -239,7 +232,6 @@ class ParamFunction(object):
         pos1_rel = np.array([radio1*np.sin(tita1)*np.cos(phi1),
                              radio1*np.sin(tita1)*np.sin(phi1),
                              radio1*np.cos(tita1)])
-        print(pos1_rel)
         pos1_abs = pos1_rel + self.waypoints.initial_pos.get_position()
         waypoint1 = Dummy.create()
         waypoint1.set_position(pos1_abs)
@@ -250,7 +242,6 @@ class ParamFunction(object):
         pos2_rel = np.array([radio2*np.sin(tita2)*np.cos(phi2),
                              radio2*np.sin(tita2)*np.sin(phi2),
                              radio2*np.cos(tita2)])
-        print(pos2_rel)
         pos2_abs = pos2_rel + pos1_abs
         waypoint2 = Dummy.create()
         waypoint2.set_position(pos2_abs)

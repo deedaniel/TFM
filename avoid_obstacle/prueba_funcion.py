@@ -2,7 +2,7 @@ import numpy as np
 import avoid_obstacle.param_function as pf
 import math
 
-function = pf.ParamFunction()  # Inicializacion
+function = pf.ParamFunction(headless_mode=False)  # Inicializacion
 # function = sbf.SlideBlockFunction()
 
 # radius = [0.27, 0.32]

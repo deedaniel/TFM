@@ -1,10 +1,13 @@
 import numpy as np
-import three_obstacles_fun as tof
+import three_obstacles.three_obstacles_fun as tof
+import pickle
 
-fun = tof.ThreeObstacles()
+file = "param solucion bayesopt.p"
+wp_params = pickle.load(open(file, "rb"))
 
-wp_params = np.array([0.25,1.0472,0.25,0])
-reward = fun.avoidance_with_waypoints(wp_params)
+fun = tof.ThreeObstacles(headless_mode=False)
+
+reward = fun.avoidance_with_waypoints(wp_params[1])
 print(reward)
 
 fun.shutdown()
