@@ -3,10 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as sp
 
-file1 = "listas_bayesopt_3obs_wp.p"
+TASK_DIR = "push_button/"
+
+file1 = TASK_DIR + "listas_bayesopt.p"
 resultados1 = pickle.load(open(file1, "rb"))
 
-file2 = "listas_scipy_3obs.p"
+file2 = TASK_DIR + "listas_scipy.p"
 resultados2 = pickle.load(open(file2, "rb"))
 
 lista_de_resultados = [resultados1, resultados2]
@@ -21,13 +23,20 @@ for resultado in lista_de_resultados:
 
     for i in range(n_experimentos):
         for j in range(n_iteraciones):
-            lists_of_best_rewards[i, j] = np.min(resultado[i].list_of_rewards[:(j + 1)])
+            lists_of_best_rewards[i, j] = np.max(resultado[i].list_of_rewards[:(j + 1)])
+
+    print(lists_of_best_rewards[:, n_iteraciones-1])
 
     res = np.asarray(lists_of_best_rewards)
     res_mean = np.mean(lists_of_best_rewards, axis=0)
     res_std = np.std(lists_of_best_rewards, axis=0)
     n, it = range(res.shape[0]), range(res.shape[1])
     t_limits = sp.t.interval(0.95, n_experimentos) / np.sqrt(n_experimentos)
+
+    # res = res[0:60]
+    # res_mean = res_mean[0:60]
+    # res_std = res_std[0:60]
+    # it = it[0:60]
 
     plt.plot(it, res_mean, linewidth=2, label=None)
     plt.fill(np.concatenate([it, it[::-1]]),
@@ -39,6 +48,6 @@ for resultado in lista_de_resultados:
 plt.ylabel(ylabel='Recompensa')
 plt.xlabel(xlabel='Iteraciones')
 plt.title(label='Recompensa frente iteraciones')
-plt.legend(loc='upper right')
-plt.savefig("it_rew_3obs_wp.png")
+plt.legend(loc='lower right')
+plt.savefig(TASK_DIR + "it_reward.png")
 plt.show()

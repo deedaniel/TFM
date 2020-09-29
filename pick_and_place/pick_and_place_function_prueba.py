@@ -1,10 +1,12 @@
-import numpy as np
-import pick_and_place_function as ppf
+import pick_and_place.pick_and_place_function as ppf
+import pickle
+
+file = "solutions_scipy_esf_wp.p"
+wp_params = pickle.load(open(file, "rb"))
 
 function = ppf.PickAndPlace()  # Inicializacion
 
-wp_params = np.array([0.00618781,-0.00204216,-0.163625,0.020944,-0.0560744,-0.102735])
-reward = function.pick_and_place(wp_params)
+reward = function.pick_and_place(wp_params[0])
 print(reward)
 
 function.shutdown()  # Apagado

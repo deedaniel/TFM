@@ -3,7 +3,7 @@ import numpy as np
 import three_obstacles.three_obstacles_fun as sbf
 import pickle
 
-function = sbf.ThreeObstacles()  # Inicializacion
+function = sbf.ThreeObstacles(headless_mode=False)  # Inicializacion
 
 bounds = [(0.1, 0.4), (-np.pi/2, np.pi/2), (0.1, 0.4), (-np.pi/2, np.pi/2)]
 

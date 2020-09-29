@@ -2,11 +2,12 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as sp
+import math
 
-file1 = "listas_bayesopt_slideblock.p"
+file1 = "listas_bayesopt_pickandplace.p"
 resultados1 = pickle.load(open(file1, "rb"))
 
-file2 = "listas_scipy_slideblock.p"
+file2 = "listas_scipy_pickandplace.p"
 resultados2 = pickle.load(open(file2, "rb"))
 
 lista_de_resultados = [resultados1, resultados2]
@@ -16,18 +17,14 @@ etiqueta = ['bayesopt', 'differential evolution']
 for resultado in lista_de_resultados:
     n_iteraciones = len(resultado[0].list_of_rewards)
     n_experimentos = len(resultado)
-    # n_dimensiones = len(resultado[0].list_of_parameters[0])
-    # print(n_dimensiones)
 
     lists_of_best_rewards = np.zeros((n_experimentos, n_iteraciones))
-    # best_param = np.zeros((n_experimentos, n_dimensiones))
 
     for i in range(n_experimentos):
         for j in range(n_iteraciones):
             lists_of_best_rewards[i, j] = np.max(resultado[i].list_of_rewards[:(j + 1)])
-        # best_param[i] = resultado[i].list_of_parameters[np.argmin(resultado[i].list_of_rewards)]
 
-    # pickle.dump(best_param, open("param solucion " + etiqueta[lista_de_resultados.index(resultado)] + ".p", "wb"))
+    print(lists_of_best_rewards[:, 80])
 
     res = np.asarray(lists_of_best_rewards)
     res_mean = np.mean(lists_of_best_rewards, axis=0)
@@ -35,10 +32,10 @@ for resultado in lista_de_resultados:
     n, it = range(res.shape[0]), range(res.shape[1])
     t_limits = sp.t.interval(0.95, n_experimentos) / np.sqrt(n_experimentos)
 
-    res = res[0:250]
-    res_mean = res_mean[0:250]
-    res_std = res_std[0:250]
-    it = it[0:250]
+    res = res[0:100]
+    res_mean = res_mean[0:100]
+    res_std = res_std[0:100]
+    it = it[0:100]
 
     plt.plot(it, res_mean, linewidth=2, label=None)
     plt.fill(np.concatenate([it, it[::-1]]),
@@ -51,5 +48,5 @@ plt.ylabel(ylabel='Recompensa')
 plt.xlabel(xlabel='Iteraciones')
 plt.title(label='Recompensa frente iteraciones')
 plt.legend(loc='lower right')
-plt.savefig("it_rew_slideblock.png")
+plt.savefig("it_rew_pickandplace.png")
 plt.show()

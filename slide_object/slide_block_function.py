@@ -95,8 +95,8 @@ class SlideBlock(object):
                 reward = -85
 
         self.pyrep.stop()  # Stop the simulation
-        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, reward)
-        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, slide_params)
+        self.lists.list_of_rewards.append(reward)
+        self.lists.list_of_parameters.append(list(slide_params))
         return -reward
 
     def clean_lists(self):

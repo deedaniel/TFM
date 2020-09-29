@@ -6,7 +6,6 @@ from pyrep.objects.dummy import Dummy
 from pyrep.objects.shape import Shape
 from pyrep.objects.joint import Joint
 from pyrep.errors import ConfigurationPathError
-import math
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 
 DIR_PATH = dirname(abspath(__file__))
@@ -29,13 +28,12 @@ class InitTask(object):
         self.target_wrap = Shape('target_button_wrap')
         self.wp0 = Dummy('waypoint0')
         self.wp1 = Dummy('waypoint1')
+        self.button_wp = Dummy('target_button')
         self.joint = Joint('target_button_joint')
 
 
 class Parameters(object):
     def __init__(self):
-        self.time = 0
-        self.iteration = 1
         self.original_pos = 0
 
 
@@ -47,9 +45,9 @@ class Lists(object):
 
 
 class PushButton(object):
-    def __init__(self):
+    def __init__(self, headless_mode: bool):
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=False)
+        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=headless_mode)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.task = InitTask()
         self.param = Parameters()
@@ -59,7 +57,7 @@ class PushButton(object):
     def push_button(self, push_params: np.array):
         # Definición del punto de empuje
         push_pos_rel = np.array([push_params[0], push_params[1], push_params[2]])
-        push_pos = self.task.target_button.get_position() + push_pos_rel
+        push_pos = self.task.wp0.get_position() + push_pos_rel
         self.task.wp1.set_position(push_pos)
 
         tray = [self.task.wp0, self.task.wp1]
@@ -84,18 +82,18 @@ class PushButton(object):
                 while not done:
                     done = path.step()
                     self.pyrep.step()
-                reward = 2000 * np.abs(np.linalg.norm(self.task.joint.get_joint_position() - self.param.original_pos)
-                                       - 0.003)
+                distance_objective = self.robot.tip.check_distance(self.task.button_wp)
+                reward = (-400 * distance_objective ** 2 -
+                          2000 * np.abs(np.linalg.norm(self.task.joint.get_joint_position() - self.param.original_pos)
+                                        - 0.003))
             except ConfigurationPathError:
                 print('Could not find path')
-                reward = -40
+                reward = -14
                 return -reward
 
         self.pyrep.stop()  # Stop the simulation
-        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, -reward)
-        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, push_params)
-        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
-        self.param.iteration += 1
+        self.lists.list_of_rewards.append(reward)
+        self.lists.list_of_parameters.append(list(push_params))
         return -reward
 
     def clean_lists(self):

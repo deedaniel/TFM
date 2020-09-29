@@ -9,16 +9,17 @@ n = 4  # n dimensions
 lb = np.array([0.1, -np.pi/2, 0.1, -np.pi/2])
 ub = np.array([0.4, np.pi/2, 0.4, np.pi/2])
 
-params = {'n_iterations': 250,
+params = {'n_iterations': 100,
           'n_iter_relearn': 5,
-          'n_init_samples': 5*n}
+          'n_init_samples': 5*n,
+          'l_type': 'L_MCMC'}
 
 listas = []
 best_param = []
 n_experimentos = 5
 
 for i in range(n_experimentos):
-    print('Experimento nº: ' + str(i))
+    print(i)
     function.clean_lists()
     mvalue, x_out, error = bayesopt.optimize(function.avoidance_with_waypoints, n, lb, ub, params)
     print("Result", mvalue, "at", x_out)
