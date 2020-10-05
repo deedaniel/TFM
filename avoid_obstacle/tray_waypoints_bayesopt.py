@@ -1,9 +1,9 @@
 import bayesopt
 import numpy as np
-import avoid_obstacle.param_function as pf
+import avoid_obstacle.avoid_obstacle_function as pf
 import pickle
 
-function = pf.ParamFunction(headless_mode=True)  # Inicializacion
+function = pf.AvoidObstacle(headless_mode=True)  # Inicializacion
 
 n = 6  # n dimensions
 lb = np.array([0.1, 0, 0, 0.1, 0, 0])

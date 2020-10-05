@@ -10,7 +10,7 @@ from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 import matplotlib
 import matplotlib.pyplot as plt
 
-SCENE_FILE = join(dirname(abspath(__file__)), 'scene_with_panda_2.ttt')
+SCENE_FILE = join(dirname(abspath(__file__)), 'avoid_obstacle.ttt')
 pr = PyRep()
 pr.launch(SCENE_FILE, headless=True)  # Launch the application with a scene file that contains a robot
 

@@ -8,7 +8,7 @@ from pyrep.objects.dummy import Dummy
 from pyrep.objects.shape import Shape
 from pyrep.errors import ConfigurationPathError
 
-SCENE_FILE = join(dirname(abspath(__file__)), 'scene_with_panda_2.ttt')
+SCENE_FILE = join(dirname(abspath(__file__)), 'avoid_obstacle.ttt')
 pr = PyRep()
 pr.launch(SCENE_FILE)  # Launch the application with a scene file that contains a robot
 

@@ -52,7 +52,10 @@ class SlideBlock(object):
         # Definición del punto de empuje
         wp1_pos_rel = np.array([slide_params[0], slide_params[1], slide_params[2]])
         wp1_pos_abs = wp1_pos_rel + self.task.wp0.get_position()
+        wp1_or_rel = np.array([0.0, 0.0, slide_params[4]])
+        wp1_or_abs = wp1_or_rel + self.task.wp0.get_orientation()
         self.task.wp1.set_position(wp1_pos_abs)
+        self.task.wp1.set_orientation(wp1_or_abs)
 
         # Definición del objetivo final
         distance = slide_params[3]
@@ -60,13 +63,15 @@ class SlideBlock(object):
 
         final_pos_rel = np.array([distance * math.sin(orientation), distance * math.cos(orientation), 0])
         final_pos_abs = final_pos_rel + self.task.wp1.get_position()
+        final_or_abs = wp1_or_abs
         self.task.wp2.set_position(final_pos_abs)
+        self.task.wp2.set_orientation(final_or_abs)
 
         tray = [self.task.wp0, self.task.wp1, self.task.wp2]
 
         # Ejecución de la trayectoria
         self.pyrep.start()
-        reward = 0
+        reward = - 10 * distance ** 2
 
         done = False
         # Cerrar la pinza para poder empujar el objeto.

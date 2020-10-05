@@ -10,7 +10,7 @@ import pickle
 import sys
 
 DIR_PATH = dirname(abspath(__file__))
-TTT_FILE = 'scene_with_panda_2.ttt'
+TTT_FILE = 'avoid_obstacle.ttt'
 
 
 class Robot(object):  # Estructura del robot
@@ -58,7 +58,7 @@ class Lists(object):
         self.list_of_rewards = []
 
 
-class ParamFunction(object):
+class AvoidObstacle(object):
     def __init__(self, headless_mode: bool):
         self.pyrep = PyRep()
         self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=headless_mode)
@@ -69,7 +69,7 @@ class ParamFunction(object):
         self.waypoints = Waypoints()
         self.lists = Lists()
 
-    def avoidance_tray_circular(self, radius):
+    def tray_circular(self, radius):
         self.pyrep.start()  # We start the simulation
 
         self.target.pos = self.target.initial_pos  # We set the pos as the initial pos
@@ -151,7 +151,7 @@ class ParamFunction(object):
         self.param.radius = radius_interval[0]
 
         while self.param.radius <= radius_interval[1]:
-            self.avoidance_tray_circular(self.param.radius)
+            self.tray_circular(self.param.radius)
             self.param.radius += radius_step
 
         pickle.dump(self.lists, open("listas_brute_force.p", "wb"))
@@ -169,11 +169,16 @@ class ParamFunction(object):
         # Definición de la trayectoria
         tray = [self.waypoints.initial_pos, waypoint1, waypoint2, self.waypoints.final_pos]
 
+        d_tray_1 = self.waypoints.initial_pos.check_distance(waypoint1)
+        d_tray_2 = waypoint1.check_distance(waypoint2)
+        d_tray_3 = waypoint2.check_distance(self.waypoints.final_pos)
+        d_tray = d_tray_1 + d_tray_2 + d_tray_3
+
+        reward = - 2 * d_tray ** 2
+
         # Ejecución de la trayectoria
         self.pyrep.start()
 
-        self.param.time = 0
-        cost = 0
         for pos in tray:
             try:
                 path = self.robot.arm.get_path(position=pos.get_position(),
@@ -183,19 +188,17 @@ class ParamFunction(object):
                 while not done:
                     done = path.step()
                     self.pyrep.step()
-                    self.param.time += self.pyrep.get_simulation_timestep()
 
-                    distance_obstacle = calc_distance(self.obstacle.pos, self.robot.tip.get_position())
-                    distance_objective = calc_distance(self.waypoints.final_pos.get_position(),
-                                                       self.robot.tip.get_position())
-                    cost += 0.1*np.exp(-10*(distance_obstacle - 0.3)) + 0.2*distance_objective**2
+                    distance_obstacle = self.robot.gripper.check_distance(self.obstacle.obstacle)
+
+                    reward -= 20 * np.exp(-150 * distance_obstacle)
             except ConfigurationPathError:
-                cost = 400
+                reward = -400
 
         self.pyrep.stop()
         self.lists.list_of_parameters.append(list(wp_params))
-        self.lists.list_of_rewards.append(cost)
-        return cost
+        self.lists.list_of_rewards.append(reward)
+        return -reward
 
     def shutdown(self):
         self.pyrep.shutdown()  # Close the application
@@ -206,20 +209,20 @@ class ParamFunction(object):
     def return_lists(self):
         return self.lists
 
-    def set_coords(self, coord: str):
-        self.param.coords = coord
+    def set_coords(self, coords: str):
+        self.param.coords = coords
 
     def get_coords(self):
         return self.param.coords
 
     def get_waypoints_cart(self, wp_params: np.array):
         pos1_rel = np.array([wp_params[0], wp_params[1], wp_params[2]])
-        pos1_abs = pos1_rel + self.obstacle.pos
+        pos1_abs = pos1_rel + self.waypoints.initial_pos.get_position()
         waypoint1 = Dummy.create()
         waypoint1.set_position(pos1_abs)
 
         pos2_rel = np.array([wp_params[3], wp_params[4], wp_params[5]])
-        pos2_abs = pos2_rel + self.obstacle.pos
+        pos2_abs = pos2_rel + pos1_abs
         waypoint2 = Dummy.create()
         waypoint2.set_position(pos2_abs)
 
