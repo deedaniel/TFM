@@ -32,6 +32,6 @@ for i in range(n_experimentos):
     params_solution.append(result)
 
 pickle.dump(listas, open(TASK_DIR + "listas_difevol_" + TASK_NAME + ".p", "wb"))
-pickle.dump(params_solution, open(TASK_DIR + "listas_difevol_" + TASK_NAME + ".p", "wb"))
+pickle.dump(params_solution, open(TASK_DIR + "solucion_difevol_" + TASK_NAME + ".p", "wb"))
 
 function.shutdown()  # Apagado

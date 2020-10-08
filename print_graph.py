@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as sp
 
-TASK_DIR = "avoid_obstacle/"
-TASK_NAME = "avoid_obstacle"
+TASK_DIR = "slide_object/"
+TASK_NAME = "slide_block"
 # coords_type = "esfericas"
 
 file1 = TASK_DIR + "listas_bayesopt_" + TASK_NAME + ".p"
@@ -41,10 +41,10 @@ for resultado in lista_de_resultados:
     n, it = range(res.shape[0]), range(res.shape[1])
     t_limits = sp.t.interval(0.95, n_experimentos) / np.sqrt(n_experimentos)
 
-    res = res[0:50]
-    res_mean = res_mean[0:50]
-    res_std = res_std[0:50]
-    it = it[0:50]
+    # res = res[0:50]
+    # res_mean = res_mean[0:50]
+    # res_std = res_std[0:50]
+    # it = it[0:50]
 
     plt.plot(it, res_mean, linewidth=2, label=None)
     plt.fill(np.concatenate([it, it[::-1]]),
