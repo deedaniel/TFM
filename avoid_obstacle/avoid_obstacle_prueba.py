@@ -15,7 +15,7 @@ wp_params = np.array([0, 0.1, 0.2, 0, 0.5, 0.0])
 function = fun.AvoidObstacle(headless_mode=False)  # Inicializacion
 
 # function.avoidance_brute_force(radius_interval=radius)  # Ejecucion
-reward = function.tray_with_waypoints(params_solution[0])
+reward = function.tray_with_waypoints(wp_params)
 
 print(reward)
 

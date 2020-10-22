@@ -18,9 +18,9 @@ def bayesopt_bounds(task: str, coords="cartesianas"):
         lb = np.array([-0.15, -0.15, -0.25, -0.1, -0.1, -0.25])
         ub = np.array([0.15, 0.15, -0.14, 0.1, 0.1, -0.14])
     elif task == 'push_button':
-        n = 3  # n dimensions
-        lb = np.array([-0.05, -0.05, -0.20])
-        ub = np.array([0.05, 0.05, 0.0])
+        n = 6  # n dimensions
+        lb = np.array([0.0, -0.1, -0.15, -np.pi / 4, 0.0, -np.pi / 2])
+        ub = np.array([0.1, 0.1, 0.0, np.pi / 4, np.pi / 3, np.pi / 2])
     elif task == 'slide_block':
         n = 5  # n dimensions
         lb = np.array([-0.2, 0.0, -0.25, 0.05, -np.pi / 4])
@@ -44,7 +44,8 @@ def difevol_bounds(task: str, coords="cartesianas"):
     elif task == 'pick_and_place':
         bounds = [(-0.15, 0.15), (-0.15, 0.15), (-0.25, -0.15), (-0.1, 0.1), (-0.1, 0.1), (-0.25, -0.15)]
     elif task == 'push_button':
-        bounds = [(-0.05, 0.05), (-0.05, 0.05), (-0.2, 0.0)]
+        bounds = [(0.0, 0.1), (-0.1, 0.1), (-0.15, 0.0), (np.pi / 4, np.pi / 4), (0.0, np.pi / 3),
+                  (-np.pi / 2, np.pi / 2)]
     elif task == 'slide_block':
         bounds = [(-0.2, 0.2), (0.0, 0.2), (-0.25, 0.0), (0.05, 0.4), (-np.pi / 4, np.pi / 4)]
     elif task == 'three_obstacles':

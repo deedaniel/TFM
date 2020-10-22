@@ -3,17 +3,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as sp
 
-TASK_DIR = "slide_object/"
-TASK_NAME = "slide_block"
+TASK_DIR = "push_button/"
+TASK_NAME = "push_button"
 # coords_type = "esfericas"
 
 file1 = TASK_DIR + "listas_bayesopt_" + TASK_NAME + ".p"
 resultados1 = pickle.load(open(file1, "rb"))
 
-file2 = TASK_DIR + "listas_difevol_" + TASK_NAME + ".p"
-resultados2 = pickle.load(open(file2, "rb"))
+# file2 = TASK_DIR + "listas_difevol_" + TASK_NAME + ".p"
+# resultados2 = pickle.load(open(file2, "rb"))
 
-lista_de_resultados = [resultados1, resultados2]
+# lista_de_resultados = [resultados1, resultados2]
+lista_de_resultados = [resultados1]
 color = ['b', 'r']
 etiqueta = ['bayesopt', 'differential evolution']
 

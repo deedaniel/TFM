@@ -50,9 +50,9 @@ class Lists(object):
 
 
 class PickAndPlace(object):
-    def __init__(self):
+    def __init__(self, headless_mode: bool):
         self.pr = PyRep()
-        self.pr.launch(join(DIR_PATH, TTT_FILE), headless=True)
+        self.pr.launch(join(DIR_PATH, TTT_FILE), headless=headless_mode)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
         self.task = InitTask()
         self.param = Parameters()

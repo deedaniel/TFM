@@ -60,6 +60,12 @@ class PushButton(object):
         push_pos = self.task.wp0.get_position() + push_pos_rel
         self.task.wp1.set_position(push_pos)
 
+        # Definicion de la orientacion
+        or_rel = np.array([push_params[3], push_params[4], push_params[5]])
+        or_abs = self.task.wp0.get_orientation() + or_rel
+        self.task.wp0.set_orientation(or_abs)
+        self.task.wp1.set_orientation(or_abs)
+
         tray = [self.task.wp0, self.task.wp1]
 
         # Ejecución de la trayectoria
@@ -83,12 +89,14 @@ class PushButton(object):
                     done = path.step()
                     self.pyrep.step()
                 distance_objective = self.robot.tip.check_distance(self.task.button_wp)
-                reward = (-400 * distance_objective ** 2 -
-                          2000 * np.abs(np.linalg.norm(self.task.joint.get_joint_position() - self.param.original_pos)
-                                        - 0.003))
+                error_alpha = self.task.button_wp.get_orientation()[0] - self.task.wp1.get_orientation()[0]
+                error_beta = self.task.button_wp.get_orientation()[1] - self.task.wp1.get_orientation()[1]
+                error_gamma = self.task.button_wp.get_orientation()[2] - self.task.wp1.get_orientation()[2]
+                reward = (-400 * distance_objective ** 2 - 5 * error_alpha ** 2 - 5 * error_beta ** 2
+                          - 1 * error_gamma ** 2)
             except ConfigurationPathError:
                 print('Could not find path')
-                reward = -14
+                reward = -150
                 return -reward
 
         self.pyrep.stop()  # Stop the simulation
