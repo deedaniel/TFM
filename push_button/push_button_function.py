@@ -3,13 +3,11 @@ import numpy as np
 from pyrep import PyRep
 from pyrep.robots.arms.panda import Panda
 from pyrep.objects.dummy import Dummy
-from pyrep.objects.shape import Shape
 from pyrep.objects.joint import Joint
 from pyrep.errors import ConfigurationPathError
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 
 DIR_PATH = dirname(abspath(__file__))
-TTT_FILE = 'push_button.ttt'
 
 
 class Robot(object):  # Estructura del robot
@@ -22,19 +20,21 @@ class Robot(object):  # Estructura del robot
 
 # Declaración y definición de los elementos de la tarea
 class InitTask(object):
-    def __init__(self):
-        self.target_button = Shape('push_button_target')
-        self.target_topPlate = Shape('target_button_topPlate')
-        self.target_wrap = Shape('target_button_wrap')
+    def __init__(self, variation):
         self.wp0 = Dummy('waypoint0')
         self.wp1 = Dummy('waypoint1')
-        self.button_wp = Dummy('target_button')
-        self.joint = Joint('target_button_joint')
+        self.button_wp0 = Dummy('target_button0')
+        self.joint0 = Joint('target_button_joint0')
+        if variation == '2button':
+            self.button_wp1 = Dummy('target_button1')
+            self.joint1 = Joint('target_button_joint1')
 
 
 class Parameters(object):
-    def __init__(self):
-        self.original_pos = 0
+    def __init__(self, variation):
+        self.original_pos0 = 0
+        if variation == '2button':
+            self.original_pos1 = 0
 
 
 class Lists(object):
@@ -45,13 +45,17 @@ class Lists(object):
 
 
 class PushButton(object):
-    def __init__(self, headless_mode: bool):
+    def __init__(self, headless_mode: bool, variation='1button'):
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=headless_mode)
+        self.variation = variation
+        self.ttt_file = 'push_button_' + self.variation + '.ttt'
+        self.pyrep.launch(join(DIR_PATH, self.ttt_file), headless=headless_mode)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
-        self.task = InitTask()
-        self.param = Parameters()
-        self.param.original_pos = self.task.joint.get_joint_position()
+        self.task = InitTask(self.variation)
+        self.param = Parameters(self.variation)
+        self.param.original_pos0 = self.task.joint0.get_joint_position()
+        if self.variation == '2button':
+            self.param.original_pos1 = self.task.joint1.get_joint_position()
         self.lists = Lists()
 
     def push_button(self, push_params: np.array):
@@ -88,12 +92,15 @@ class PushButton(object):
                 while not done:
                     done = path.step()
                     self.pyrep.step()
-                distance_objective = self.robot.tip.check_distance(self.task.button_wp)
-                error_alpha = self.task.button_wp.get_orientation()[0] - self.task.wp1.get_orientation()[0]
-                error_beta = self.task.button_wp.get_orientation()[1] - self.task.wp1.get_orientation()[1]
-                error_gamma = self.task.button_wp.get_orientation()[2] - self.task.wp1.get_orientation()[2]
-                reward = (-400 * distance_objective ** 2 - 5 * error_alpha ** 2 - 5 * error_beta ** 2
+                distance_objective0 = self.robot.tip.check_distance(self.task.button_wp0)
+                error_alpha = self.task.button_wp0.get_orientation()[0] - self.task.wp1.get_orientation()[0]
+                error_beta = self.task.button_wp0.get_orientation()[1] - self.task.wp1.get_orientation()[1]
+                error_gamma = self.task.button_wp0.get_orientation()[2] - self.task.wp1.get_orientation()[2]
+                reward = (-400 * distance_objective0 ** 2 - 5 * error_alpha ** 2 - 5 * error_beta ** 2
                           - 1 * error_gamma ** 2)
+                if self.variation == '2button':
+                    distance_objective1 = self.robot.tip.check_distance(self.task.button_wp1)
+                    reward -= 800 * distance_objective1 ** 2
             except ConfigurationPathError:
                 print('Could not find path')
                 reward = -150
