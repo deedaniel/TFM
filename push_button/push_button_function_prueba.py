@@ -11,7 +11,8 @@ print(wp_params[0])
 
 function = fun.PushButton(headless_mode=False)  # Inicializacion
 
-push_params = np.array([0.0685, 0.0, -0.1187, 0.0, np.pi / 6, 0.0])
+# push_params = np.array([0.0685, 0.0, -0.1187, 0.0, np.pi / 6, 0.0])
+push_params = np.array([0.0712963,0.00740741,-0.0805556,-0.0581776,0.785398,0.116355])
 reward = function.push_button(push_params)
 print(reward)
 

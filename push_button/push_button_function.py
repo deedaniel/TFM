@@ -74,7 +74,7 @@ class PushButton(object):
         reward = 0
 
         done = False
-        # Cerrar la pinza para poder pretar el boton.
+        # Cerrar la pinza para poder apretar el boton.
         while not done:
             done = self.robot.gripper.actuate(0, velocity=0.05)
             self.pyrep.step()
