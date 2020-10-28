@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def bayesopt_bounds(task: str, coords="cartesianas"):
+def bayesopt_bounds(task: str, coords="cartesianas", variation="1button"):
     n = 0
     lb = 0
     ub = 0
@@ -19,8 +19,12 @@ def bayesopt_bounds(task: str, coords="cartesianas"):
         ub = np.array([0.15, 0.15, -0.14, 0.1, 0.1, -0.14])
     elif task == 'push_button':
         n = 6  # n dimensions
-        lb = np.array([0.0, -0.1, -0.15, -np.pi / 4, 0.0, -np.pi / 2])
-        ub = np.array([0.1, 0.1, 0.0, np.pi / 4, np.pi / 3, np.pi / 2])
+        if variation == "1button":
+            lb = np.array([0.0, -0.05, -0.15, -np.pi / 4, 0.0, -np.pi / 2])
+            ub = np.array([0.1, 0.05, 0.0, np.pi / 4, np.pi / 3, np.pi / 2])
+        elif variation == "2button":
+            lb = np.array([-0.1, -0.05, -0.2, -np.pi / 4, 0.0, -np.pi / 2])
+            ub = np.array([0.15, 0.05, 0.0, np.pi / 4, np.pi / 3, np.pi / 2])
     elif task == 'slide_block':
         n = 5  # n dimensions
         lb = np.array([-0.2, 0.0, -0.25, 0.05, -np.pi / 4])

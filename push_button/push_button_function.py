@@ -32,9 +32,10 @@ class InitTask(object):
 
 class Parameters(object):
     def __init__(self, variation):
-        self.original_pos0 = 0
+        self.original_pos0 = 0.0
+        self.original_or = 0.0
         if variation == '2button':
-            self.original_pos1 = 0
+            self.original_pos1 = 0.0
 
 
 class Lists(object):
@@ -54,11 +55,14 @@ class PushButton(object):
         self.task = InitTask(self.variation)
         self.param = Parameters(self.variation)
         self.param.original_pos0 = self.task.joint0.get_joint_position()
+        self.param.original_or = self.task.wp0.get_orientation()
         if self.variation == '2button':
             self.param.original_pos1 = self.task.joint1.get_joint_position()
         self.lists = Lists()
 
     def push_button(self, push_params: np.array):
+        print("Parametros:")
+        print(push_params)
         # Definición del punto de empuje
         push_pos_rel = np.array([push_params[0], push_params[1], push_params[2]])
         push_pos = self.task.wp0.get_position() + push_pos_rel
@@ -66,16 +70,20 @@ class PushButton(object):
 
         # Definicion de la orientacion
         or_rel = np.array([push_params[3], push_params[4], push_params[5]])
-        or_abs = self.task.wp0.get_orientation() + or_rel
+        or_abs = self.param.original_or + or_rel
         self.task.wp0.set_orientation(or_abs)
         self.task.wp1.set_orientation(or_abs)
 
-        tray = [self.task.wp0, self.task.wp1]
+        tray = [self.task.wp0, self.task.wp1, self.task.wp0]
 
         # Ejecución de la trayectoria
         self.pyrep.start()
-        self.param.time = 0
-        reward = 0
+
+        distance_objective0 = 0.0
+        distance_objective1 = 0.0
+        error_alpha = 0.0
+        error_beta = 0.0
+        error_gamma = 0.0
 
         done = False
         # Cerrar la pinza para poder apretar el boton.
@@ -92,19 +100,34 @@ class PushButton(object):
                 while not done:
                     done = path.step()
                     self.pyrep.step()
-                distance_objective0 = self.robot.tip.check_distance(self.task.button_wp0)
-                error_alpha = self.task.button_wp0.get_orientation()[0] - self.task.wp1.get_orientation()[0]
-                error_beta = self.task.button_wp0.get_orientation()[1] - self.task.wp1.get_orientation()[1]
-                error_gamma = self.task.button_wp0.get_orientation()[2] - self.task.wp1.get_orientation()[2]
-                reward = (-400 * distance_objective0 ** 2 - 5 * error_alpha ** 2 - 5 * error_beta ** 2
-                          - 1 * error_gamma ** 2)
-                if self.variation == '2button':
-                    distance_objective1 = self.robot.tip.check_distance(self.task.button_wp1)
-                    reward -= 800 * distance_objective1 ** 2
+
+                if pos == self.task.wp1:
+                    distance_objective0 = self.robot.tip.check_distance(self.task.button_wp0)
+                    error_alpha = self.task.button_wp0.get_orientation()[0] - self.task.wp1.get_orientation()[0]
+                    error_beta = self.task.button_wp0.get_orientation()[1] - self.task.wp1.get_orientation()[1]
+                    error_gamma = self.task.button_wp0.get_orientation()[2] - self.task.wp1.get_orientation()[2]
+                    if self.variation == '2button':
+                        distance_objective1 = self.robot.tip.check_distance(self.task.button_wp1)
+                        print("Distancias:")
+                        print(distance_objective0, distance_objective1)
+                        print("Errores de los angulos:")
+                        print(error_alpha, error_beta, error_gamma)
             except ConfigurationPathError:
                 print('Could not find path')
                 reward = -150
+                print("Recompensa:")
+                print(reward)
+                self.pyrep.stop()  # Stop the simulation
+                self.lists.list_of_rewards.append(reward)
+                self.lists.list_of_parameters.append(list(push_params))
                 return -reward
+
+        reward = (-400 * distance_objective0 ** 2 - 5 * error_alpha ** 2 - 5 * error_beta ** 2
+                  - 1 * error_gamma ** 2 - 800 * distance_objective1 ** 2 -
+                  3000 * distance_objective0 * distance_objective1)
+
+        print("Recompensa:")
+        print(reward)
 
         self.pyrep.stop()  # Stop the simulation
         self.lists.list_of_rewards.append(reward)

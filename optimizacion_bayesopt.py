@@ -5,9 +5,10 @@ import params_opt
 
 TASK_DIR = "push_button/"
 # coords_type = 'esfericas'
+VARIATION = "2button"
 TASK_NAME = "push_button"  # + "_" + coords_type
 
-n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME)
+n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME, variation=VARIATION)
 
 params = {'n_iterations': 300,
           'n_iter_relearn': 10,
@@ -17,7 +18,7 @@ listas = []
 param_solution = []
 n_experimentos = 1
 
-function = fun.PushButton(headless_mode=True)  # Inicializacion
+function = fun.PushButton(headless_mode=True, variation=VARIATION)  # Inicializacion
 
 # Coordenadas de la tarea avoid_obstacle
 # function.set_coords(coords=coords_type)
@@ -31,7 +32,7 @@ for i in range(n_experimentos):
     listas.append(listas_optimizacion)
     param_solution.append(x_out)
 
-pickle.dump(listas, open(TASK_DIR + "listas_bayesopt_" + TASK_NAME + ".p", "wb"))
-pickle.dump(param_solution, open(TASK_DIR + "solucion_bayesopt_" + TASK_NAME + ".p", "wb"))
+pickle.dump(listas, open(TASK_DIR + "listas_bayesopt_" + TASK_NAME + "_" + VARIATION + ".p", "wb"))
+pickle.dump(param_solution, open(TASK_DIR + "solucion_bayesopt_" + TASK_NAME + "_" + VARIATION + ".p", "wb"))
 
 function.shutdown()  # Apagado
