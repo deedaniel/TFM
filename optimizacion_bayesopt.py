@@ -12,11 +12,11 @@ n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME, variation=VARIATION)
 
 params = {'n_iterations': 300,
           'n_iter_relearn': 10,
-          'n_init_samples': 3*n}
+          'n_init_samples': 4*n}
 
 listas = []
 param_solution = []
-n_experimentos = 1
+n_experimentos = 5
 
 function = fun.PushButton(headless_mode=True, variation=VARIATION)  # Inicializacion
 
