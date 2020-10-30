@@ -6,15 +6,16 @@ import scipy.stats as sp
 TASK_DIR = "push_button/"
 TASK_NAME = "push_button"
 # coords_type = "esfericas"
+VARIATION = "2button"
 
-file1 = TASK_DIR + "listas_bayesopt_" + TASK_NAME + ".p"
+file1 = TASK_DIR + "listas_bayesopt_" + TASK_NAME + "_" + VARIATION + ".p"
 resultados1 = pickle.load(open(file1, "rb"))
 
-# file2 = TASK_DIR + "listas_difevol_" + TASK_NAME + ".p"
-# resultados2 = pickle.load(open(file2, "rb"))
+file2 = TASK_DIR + "listas_difevol_" + TASK_NAME + "_" + VARIATION + ".p"
+resultados2 = pickle.load(open(file2, "rb"))
 
-# lista_de_resultados = [resultados1, resultados2]
-lista_de_resultados = [resultados1]
+lista_de_resultados = [resultados1, resultados2]
+# lista_de_resultados = [resultados1]
 color = ['b', 'r']
 etiqueta = ['bayesopt', 'differential evolution']
 
@@ -58,5 +59,5 @@ plt.ylabel(ylabel='Recompensa')
 plt.xlabel(xlabel='Iteraciones')
 plt.title(label='Recompensa frente iteraciones')
 plt.legend(loc='lower right')
-plt.savefig(TASK_DIR + "it_reward_" + TASK_NAME + ".png")
+plt.savefig(TASK_DIR + "it_reward_" + TASK_NAME + "_" + VARIATION + ".png")
 plt.show()
