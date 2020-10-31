@@ -5,7 +5,7 @@ import params_opt
 
 TASK_DIR = "push_button/"
 # coords_type = 'esfericas'
-VARIATION = "2button"
+VARIATION = "1button"
 TASK_NAME = "push_button"  # + "_" + coords_type
 
 n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME, variation=VARIATION)

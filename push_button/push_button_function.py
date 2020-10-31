@@ -114,7 +114,7 @@ class PushButton(object):
                         print(error_alpha, error_beta, error_gamma)
             except ConfigurationPathError:
                 print('Could not find path')
-                reward = -150
+                reward = -200
                 print("Recompensa:")
                 print(reward)
                 self.pyrep.stop()  # Stop the simulation
