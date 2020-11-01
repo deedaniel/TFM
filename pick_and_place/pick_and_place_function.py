@@ -23,6 +23,7 @@ class Robot(object):
 class InitTask(object):
     def __init__(self, variation: str):
         self.block = Shape('block')
+        self.init_pos = self.block.get_position()
         self.wp0 = Dummy('waypoint0')
         self.wp1 = Dummy('waypoint1')
         self.wp2 = Dummy('waypoint2')
@@ -65,9 +66,9 @@ class PickAndPlace(object):
 
         # Ejecución de la trayectoria
         self.pr.start()
+        self.task.block.set_position(self.task.init_pos)
 
         distance_pick = 0.0
-        distance_place0 = 0.0
         distance_place1 = 0.0
 
         for pos in tray:
@@ -95,17 +96,18 @@ class PickAndPlace(object):
                         done = self.robot.gripper.actuate(1, velocity=0.04)
                         self.pr.step()
                     self.robot.gripper.release()
-                    distance_place0 = self.robot.tip.check_distance(self.task.place_wp0)
-                    if self.variation == '2container':
-                        distance_place1 = self.robot.tip.check_distance(self.task.place_wp1)
             except ConfigurationPathError:
                 print('Could not find path')
-                reward = -50
+                reward = -420
 
                 self.pr.stop()  # Stop the simulation
                 self.lists.list_of_parameters.append(wp_params)
                 self.lists.list_of_rewards.append(reward)
                 return -reward
+
+        distance_place0 = self.task.block.check_distance(self.task.place_wp0)
+        if self.variation == '2container':
+            distance_place1 = self.task.block.check_distance(self.task.place_wp1)
 
         reward = - (200 * distance_pick ** 2 + 200 * distance_place0 ** 2 + 400 * distance_place1 ** 2
                     + 2500 * distance_place0 * distance_place1)
