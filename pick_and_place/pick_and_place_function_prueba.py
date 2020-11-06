@@ -12,7 +12,7 @@ print(wp_params[0])
 
 function = fun.PickAndPlace(headless_mode=False, variation=VARIATION)  # Inicializacion
 
-pp_params = np.array([0.000945996,0.0132727,-0.221771,0.0958262,0.0281767,-0.195166])
+pp_params = np.array([0.0, 0.0, -0.22, 0.125, 0.0, -0.22])
 reward = function.pick_and_place(pp_params)
 print(reward)
 
