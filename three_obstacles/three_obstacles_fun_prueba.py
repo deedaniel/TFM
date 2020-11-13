@@ -6,7 +6,7 @@ import pickle
 
 fun = tof.ThreeObstacles(headless_mode=False)
 
-wp_params = [0.325, 0.455, 0.25, 0.0]
+wp_params = [0.33, 0.45, 0.25, 0.0]
 
 reward = fun.avoidance_with_waypoints(wp_params)
 print(reward)
