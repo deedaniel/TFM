@@ -5,7 +5,7 @@ import params_opt
 
 TASK_DIR = "push_button/"
 # coords_type = 'esfericas'
-VARIATION = "1button"
+VARIATION = "2button"
 TASK_NAME = "push_button"  # + "_" + coords_type
 
 bounds = params_opt.difevol_bounds(task=TASK_NAME, variation=VARIATION)
@@ -26,7 +26,7 @@ for i in range(n_experimentos):
     print(i)
     function.clean_lists()
     result = differential_evolution(function.push_button, bounds,
-                                    maxiter=maxiter, disp=True, polish=False)
+                                    maxiter=maxiter, popsize=popsize, disp=True, polish=False)
     print(result)
     listas_optimizacion = function.return_lists()
     listas.append(listas_optimizacion)

@@ -6,7 +6,7 @@ import scipy.stats as sp
 TASK_DIR = "push_button/"
 TASK_NAME = "push_button"
 # coords_type = "esfericas"
-VARIATION = "1button"
+VARIATION = "2button"
 
 file1 = TASK_DIR + "listas_bayesopt_" + TASK_NAME + "_" + VARIATION + ".p"
 resultados1 = pickle.load(open(file1, "rb"))
