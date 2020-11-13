@@ -1,12 +1,14 @@
 import three_obstacles.three_obstacles_fun as tof
 import pickle
 
-file = "solutions_scipy_esf_wp.p"
-wp_params = pickle.load(open(file, "rb"))
+# file = "solutions_scipy_esf_wp.p"
+# wp_params = pickle.load(open(file, "rb"))
 
-fun = tof.ThreeObstacles(headless_mode=True)
+fun = tof.ThreeObstacles(headless_mode=False)
 
-reward = fun.avoidance_with_waypoints(wp_params[0])
+wp_params = [0.325, 0.455, 0.25, 0.0]
+
+reward = fun.avoidance_with_waypoints(wp_params)
 print(reward)
 
 fun.shutdown()
