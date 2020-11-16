@@ -3,18 +3,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as sp
 
-TASK_DIR = "push_button/"
-TASK_NAME = "push_button"
+TASK_DIR = "three_obstacles/"
+TASK_NAME = "three_obstacles"
 # coords_type = "esfericas"
 
 file1 = TASK_DIR + "listas_bayesopt_" + TASK_NAME + ".p"
 resultados1 = pickle.load(open(file1, "rb"))
 
-# file2 = TASK_DIR + "listas_difevol_" + TASK_NAME + ".p"
-# resultados2 = pickle.load(open(file2, "rb"))
+file2 = TASK_DIR + "listas_difevol_" + TASK_NAME + "_vale.p"
+resultados2 = pickle.load(open(file2, "rb"))
 
-# lista_de_resultados = [resultados1, resultados2]
-lista_de_resultados = [resultados1]
+lista_de_resultados = [resultados1, resultados2]
+# lista_de_resultados = [resultados1]
 color = ['b', 'r']
 etiqueta = ['bayesopt', 'differential evolution']
 
@@ -42,10 +42,10 @@ for resultado in lista_de_resultados:
     n, it = range(res.shape[0]), range(res.shape[1])
     t_limits = sp.t.interval(0.95, n_experimentos) / np.sqrt(n_experimentos)
 
-    # res = res[0:50]
-    # res_mean = res_mean[0:50]
-    # res_std = res_std[0:50]
-    # it = it[0:50]
+    res = res[0:300]
+    res_mean = res_mean[0:300]
+    res_std = res_std[0:300]
+    it = it[0:300]
 
     plt.plot(it, res_mean, linewidth=2, label=None)
     plt.fill(np.concatenate([it, it[::-1]]),

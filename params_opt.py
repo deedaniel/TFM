@@ -27,8 +27,8 @@ def bayesopt_bounds(task: str, coords="cartesianas"):
         ub = np.array([0.2, 0.1, 0, 0.4, np.pi / 4])
     elif task == 'three_obstacles':
         n = 4  # n dimensions
-        lb = np.array([0.1, -np.pi / 2, 0.1, -np.pi / 2])
-        ub = np.array([0.4, np.pi / 2, 0.4, np.pi / 2])
+        lb = np.array([0.1, 0.0, 0.1, -np.pi / 4])
+        ub = np.array([0.6, 70 * np.pi / 180, 0.4, np.pi / 4])
     else:
         print('Nombre de la tarea no válido')
     return n, lb, ub
@@ -49,7 +49,7 @@ def difevol_bounds(task: str, coords="cartesianas"):
     elif task == 'slide_block':
         bounds = [(-0.2, 0.2), (0.0, 0.2), (-0.25, 0.0), (0.05, 0.4), (-np.pi / 4, np.pi / 4)]
     elif task == 'three_obstacles':
-        bounds = [(0.1, 0.4), (-np.pi/2, np.pi/2), (0.1, 0.4), (-np.pi/2, np.pi/2)]
+        bounds = [(0.1, 0.6), (0.0, 70 * np.pi / 180), (0.1, 0.4), (-np.pi/4, np.pi/4)]
     else:
         print('Nombre de la tarea no válido')
     return bounds

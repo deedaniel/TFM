@@ -57,13 +57,13 @@ class ThreeObstacles(object):
 
         # Ejecución de la trayectoria
         self.pyrep.start()
-        cost = 2 * d_tray ** 2
+        reward_long = - 4 * d_tray ** 2
+        reward_dist = 0.0
 
         for pos in tray:
             try:
-                path = self.robot.arm.get_path(position=pos.get_position(),
-                                               euler=[0, np.radians(180), 0],
-                                               ignore_collisions=True)
+                path = self.robot.arm.get_linear_path(position=pos.get_position(),
+                                                      euler=[0.0, np.radians(180), 0.0])
                 # Step the simulation and advance the agent along the path
                 done = False
                 while not done:
@@ -74,16 +74,22 @@ class ThreeObstacles(object):
                     distance_obstacle1 = self.robot.gripper.check_distance(self.task.obstacle1)
                     distance_obstacle2 = self.robot.gripper.check_distance(self.task.obstacle2)
 
-                    cost += (20 * np.exp(-300 * distance_obstacle0) +
-                             20 * np.exp(-300 * distance_obstacle1) +
-                             20 * np.exp(-300 * distance_obstacle2))
+                    reward_dist -= (20 * np.exp(-300 * distance_obstacle0) +
+                                    20 * np.exp(-300 * distance_obstacle1) +
+                                    20 * np.exp(-300 * distance_obstacle2))
             except ConfigurationPathError:
-                cost = 400
+                reward = -400.0
+                self.pyrep.stop()
+                self.lists.list_of_parameters.append(list(wp_params))
+                self.lists.list_of_rewards.append(reward)
+                return -reward
+
+        reward = reward_long + reward_dist
 
         self.pyrep.stop()
         self.lists.list_of_parameters.append(list(wp_params))
-        self.lists.list_of_rewards.append(cost)
-        return cost
+        self.lists.list_of_rewards.append(reward)
+        return -reward
 
     def shutdown(self):
         self.pyrep.shutdown()  # Close the application
