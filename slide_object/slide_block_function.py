@@ -77,12 +77,15 @@ class SlideBlock(object):
         distance_slide = 0.0
         distance_target0 = 0.0
         distance_target1 = 0.0
+        or_target0 = 0.0
+        or_target1 = 0.0
 
-        done = False
-        # Cerrar la pinza para poder empujar el objeto.
-        while not done:
-            done = self.robot.gripper.actuate(0, velocity=0.05)
-            self.pyrep.step()
+        if self.variation == '1block':
+            done = False
+            # Cerrar la pinza para poder empujar el objeto.
+            while not done:
+                done = self.robot.gripper.actuate(0, velocity=0.05)
+                self.pyrep.step()
 
         for pos in tray:
             try:
@@ -95,13 +98,15 @@ class SlideBlock(object):
                     self.pyrep.step()
 
                 if pos == self.task.wp1:
-                    distance_slide = self.robot.tip.check_distance(self.task.slide_target)
+                    distance_slide = self.robot.gripper.check_distance(self.task.block)
                 elif pos == self.task.wp2:
                     distance_target0 = calc_distance(self.task.block.get_position(),
                                                      self.task.target_wp0.get_position())
+                    or_target0 = self.task.block.get_orientation()[2] - self.task.target_wp0.get_orientation()[2]
                     if self.variation == '2block':
                         distance_target1 = calc_distance(self.task.block.get_position(),
                                                          self.task.target_wp1.get_position())
+                        or_target1 = self.task.block.get_orientation()[2] - self.task.target_wp1.get_orientation()[2]
             except ConfigurationPathError:
                 print('Could not find path')
                 reward = -85
@@ -111,7 +116,8 @@ class SlideBlock(object):
                 return -reward
 
         reward = - (10 * distance ** 2 + 200 * distance_slide ** 2 + 200 * distance_target0 ** 2
-                    + 400 * distance_target1 ** 2 + 3500 * distance_target0 * distance_target1)
+                    + 400 * distance_target1 ** 2 + 3500 * distance_target0 * distance_target1
+                    + 200 * np.abs(or_target0) * distance_target1 + 500 * np.abs(or_target1) * distance_target0)
 
         self.pyrep.stop()  # Stop the simulation
         self.lists.list_of_rewards.append(reward)
