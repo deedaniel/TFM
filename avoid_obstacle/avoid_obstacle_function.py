@@ -174,7 +174,8 @@ class AvoidObstacle(object):
         d_tray_3 = waypoint2.check_distance(self.waypoints.final_pos)
         d_tray = d_tray_1 + d_tray_2 + d_tray_3
 
-        reward = - 2 * d_tray ** 2
+        r_long = - 2 * d_tray ** 2
+        r_obstacle = 0.0
 
         # Ejecución de la trayectoria
         self.pyrep.start()
@@ -190,10 +191,20 @@ class AvoidObstacle(object):
                     self.pyrep.step()
 
                     distance_obstacle = self.robot.gripper.check_distance(self.obstacle.obstacle)
+                    r_obstacle -= 20 * np.exp(-150 * distance_obstacle)
+                    if self.robot.gripper.check_collision(self.obstacle.obstacle) or self.robot.arm.check_collision(
+                            self.obstacle.obstacle):
+                        r_obstacle -= 20
 
-                    reward -= 20 * np.exp(-150 * distance_obstacle)
+                    print(distance_obstacle, r_obstacle)
             except ConfigurationPathError:
                 reward = -400
+                self.pyrep.stop()
+                self.lists.list_of_parameters.append(list(wp_params))
+                self.lists.list_of_rewards.append(reward)
+                return -reward
+
+        reward = r_long + r_obstacle
 
         self.pyrep.stop()
         self.lists.list_of_parameters.append(list(wp_params))
