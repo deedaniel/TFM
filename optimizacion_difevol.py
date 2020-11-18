@@ -10,8 +10,8 @@ VARIATION = "2container"
 
 bounds = params_opt.difevol_bounds(task=TASK_NAME, variation=VARIATION)
 
-maxiter = 500//len(bounds)
-popsize = 3
+popsize = 10
+maxiter = 300//(len(bounds)*popsize)
 
 listas = []
 params_solution = []

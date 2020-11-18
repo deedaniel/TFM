@@ -10,9 +10,9 @@ TASK_NAME = "pick_and_place"  # + "_" + coords_type
 
 n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME, variation=VARIATION)
 
-params = {'n_iterations': 500,
+params = {'n_iterations': 300,
           'n_iter_relearn': 10,
-          'n_init_samples': 3*n}
+          'n_init_samples': 10*n}
 
 listas = []
 param_solution = []

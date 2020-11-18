@@ -105,12 +105,12 @@ class PickAndPlace(object):
                 self.lists.list_of_rewards.append(reward)
                 return -reward
 
-        distance_place0 = self.task.block.check_distance(self.task.place_wp0)
+        distance_place0 = calc_distance(self.task.block.get_position(), self.task.place_wp0.get_position())
         if self.variation == '2container':
-            distance_place1 = self.task.block.check_distance(self.task.place_wp1)
+            distance_place1 = calc_distance(self.task.block.get_position(), self.task.place_wp1.get_position())
 
         reward = - (200 * distance_pick ** 2 + 200 * distance_place0 ** 2 + 400 * distance_place1 ** 2
-                    + 2500 * distance_place0 * distance_place1)
+                    + 3500 * distance_place0 * distance_place1)
 
         self.pr.stop()  # Stop the simulation
         self.lists.list_of_parameters.append(wp_params)
