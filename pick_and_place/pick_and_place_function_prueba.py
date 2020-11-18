@@ -12,7 +12,7 @@ VARIATION = '2container'
 
 function = fun.PickAndPlace(headless_mode=True, variation=VARIATION)  # Inicializacion
 
-pp_params = np.array([0.0, 0.0, -0.22, +0.125, 0.0, -0.22])
+pp_params = np.array([0.0,  0.0, -0.22,  0.125, 0.0, -0.22])
 reward = function.pick_and_place(pp_params)
 print(reward)
 

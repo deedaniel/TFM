@@ -52,6 +52,7 @@ class PickAndPlace(object):
         self.lists = Lists()
 
     def pick_and_place(self, wp_params: np.array):
+        print(wp_params)
         # Definición de los waypoint de grasp y dejada
         pick_pos_rel = np.array([wp_params[0], wp_params[1], wp_params[2]])
         place_pos_rel = np.array([wp_params[3], wp_params[4], wp_params[5]])
