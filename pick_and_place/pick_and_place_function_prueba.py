@@ -10,9 +10,9 @@ VARIATION = '2container'
 # wp_params = pickle.load(open(file, "rb"))
 # print(wp_params[0])
 
-function = fun.PickAndPlace(headless_mode=True, variation=VARIATION)  # Inicializacion
+function = fun.PickAndPlace(headless_mode=False, variation=VARIATION)  # Inicializacion
 
-pp_params = np.array([0.0,  0.0, -0.22,  0.125, 0.0, -0.22])
+pp_params = np.array([-0.0120154,0.0062088,-0.217875,0.0937116,-0.00943356,-0.185821])
 reward = function.pick_and_place(pp_params)
 print(reward)
 

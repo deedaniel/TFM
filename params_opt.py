@@ -16,11 +16,11 @@ def bayesopt_bounds(task: str, coords="cartesianas", variation="1button"):
     elif task == 'pick_and_place':
         n = 6  # n dimensions
         if variation == "1container":
-            lb = np.array([-0.15, -0.15, -0.25, -0.1, -0.1, -0.25])
-            ub = np.array([0.15, 0.15, -0.15, 0.1, 0.1, -0.15])
+            lb = np.array([-0.1, -0.1, -0.27, -0.075, -0.075, -0.27])
+            ub = np.array([0.1, 0.1, -0.14, 0.075, 0.075, -0.14])
         elif variation == "2container":
-            lb = np.array([-0.15, -0.15, -0.25, -0.2, -0.1, -0.25])
-            ub = np.array([0.15, 0.15, -0.15, 0.2, 0.1, -0.15])
+            lb = np.array([-0.1, -0.1, -0.27, -0.2, -0.075, -0.27])
+            ub = np.array([0.1, 0.1, -0.14, 0.2, 0.075, -0.14])
     elif task == 'push_button':
         n = 6  # n dimensions
         lb = np.array([0.0, -0.1, -0.15, -np.pi / 4, 0.0, -np.pi / 2])
@@ -47,9 +47,9 @@ def difevol_bounds(task: str, coords="cartesianas", variation="1button"):
             bounds = [(0.1, 0.5), (0.0, np.pi), (0.0, np.pi), (0.1, 0.5), (0.0, np.pi), (0.0, np.pi)]  # coords esf
     elif task == 'pick_and_place':
         if variation == '1container':
-            bounds = [(-0.15, 0.15), (-0.15, 0.15), (-0.25, -0.15), (-0.1, 0.1), (-0.1, 0.1), (-0.25, -0.15)]
+            bounds = [(-0.1, 0.1), (-0.1, 0.1), (-0.27, -0.14), (-0.075, 0.075), (-0.075, 0.075), (-0.27, -0.14)]
         elif variation == '2container':
-            bounds = [(-0.15, 0.15), (-0.15, 0.15), (-0.25, -0.15), (-0.2, 0.2), (-0.1, 0.1), (-0.25, -0.15)]
+            bounds = [(-0.1, 0.1), (-0.1, 0.1), (-0.27, -0.14), (-0.2, 0.2), (-0.075, 0.075), (-0.27, -0.14)]
     elif task == 'push_button':
         bounds = [(0.0, 0.1), (-0.1, 0.1), (-0.15, 0.0), (np.pi / 4, np.pi / 4), (0.0, np.pi / 3),
                   (-np.pi / 2, np.pi / 2)]
