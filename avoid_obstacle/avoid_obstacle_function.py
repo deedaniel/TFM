@@ -16,6 +16,7 @@ TTT_FILE = 'avoid_obstacle.ttt'
 class Robot(object):  # Estructura del robot
     def __init__(self, my_robot_arm, my_robot_gripper, my_robot_tip):
         self.arm = my_robot_arm
+        self.link5 = Shape("Panda_link5_visual")
         self.gripper = my_robot_gripper
         self.tip = my_robot_tip
         self.pos = self.arm.get_position()
@@ -157,6 +158,7 @@ class AvoidObstacle(object):
         pickle.dump(self.lists, open("listas_brute_force.p", "wb"))
 
     def tray_with_waypoints(self, wp_params: np.array):
+        print(wp_params)
         if self.param.coords == 'cartesianas':
             waypoint1, waypoint2 = self.get_waypoints_cart(wp_params)
         elif self.param.coords == 'esfericas':
@@ -174,7 +176,7 @@ class AvoidObstacle(object):
         d_tray_3 = waypoint2.check_distance(self.waypoints.final_pos)
         d_tray = d_tray_1 + d_tray_2 + d_tray_3
 
-        r_long = - 2 * d_tray ** 2
+        r_long = - 4 * d_tray ** 2
         r_obstacle = 0.0
 
         # Ejecución de la trayectoria
@@ -182,29 +184,29 @@ class AvoidObstacle(object):
 
         for pos in tray:
             try:
-                path = self.robot.arm.get_path(position=pos.get_position(),
-                                               euler=[0, np.radians(180), 0])
+                path = self.robot.arm.get_linear_path(position=pos.get_position(),
+                                                      euler=[0, np.radians(180), 0])
                 # Step the simulation and advance the agent along the path
                 done = False
                 while not done:
                     done = path.step()
                     self.pyrep.step()
 
-                    distance_obstacle = self.robot.gripper.check_distance(self.obstacle.obstacle)
-                    r_obstacle -= 20 * np.exp(-150 * distance_obstacle)
-                    if self.robot.gripper.check_collision(self.obstacle.obstacle) or self.robot.arm.check_collision(
-                            self.obstacle.obstacle):
-                        r_obstacle -= 20
-
-                    print(distance_obstacle, r_obstacle)
+                    distance_obstacle_gripper = self.robot.gripper.check_distance(self.obstacle.obstacle)
+                    distance_obstacle_robot = self.robot.link5.check_distance(self.obstacle.obstacle)
+                    r_obstacle -= (20 * np.exp(-150 * distance_obstacle_gripper) +
+                                   20 * np.exp(-150 * distance_obstacle_robot))
             except ConfigurationPathError:
-                reward = -400
+                print('Could not find path')
+                reward = -300
+                print(reward)
                 self.pyrep.stop()
                 self.lists.list_of_parameters.append(list(wp_params))
                 self.lists.list_of_rewards.append(reward)
                 return -reward
 
         reward = r_long + r_obstacle
+        print(reward)
 
         self.pyrep.stop()
         self.lists.list_of_parameters.append(list(wp_params))

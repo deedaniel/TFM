@@ -8,8 +8,8 @@ def bayesopt_bounds(task: str, coords="cartesianas"):
     if task == 'avoid_obstacle':
         n = 6  # n dimensions
         if coords == 'cartesianas':
-            lb = np.array([-0.3, 0.1, -0.15, -0.15, 0.2, -0.15])  # coords cart
-            ub = np.array([0.3, 0.3, 0.4, 0.15, 0.5, 0.4])
+            lb = np.array([-0.3, 0.1, -0.15, -0.1, 0.1, -0.1])  # coords cart
+            ub = np.array([0.3, 0.3, 0.25, 0.1, 0.5, 0.1])
         elif coords == 'esfericas':
             lb = np.array([0.1, 0.0, 0.0, 0.1, 0.0, 0.0])  # coords esf
             ub = np.array([0.5, np.pi, np.pi, 0.5, np.pi, np.pi])
@@ -38,7 +38,7 @@ def difevol_bounds(task: str, coords="cartesianas"):
     bounds = []
     if task == 'avoid_obstacle':
         if coords == 'cartesianas':
-            bounds = [(-0.3, 0.3), (0.1, 0.3), (-0.15, 0.4), (-0.15, 0.15), (0.2, 0.5), (-0.15, 0.4)]  # coords cart
+            bounds = [(-0.3, 0.3), (0.1, 0.3), (-0.15, 0.25), (-0.1, 0.1), (0.2, 0.5), (-0.1, 0.1)]  # coords cart
         elif coords == 'esfericas':
             bounds = [(0.1, 0.5), (0.0, np.pi), (0.0, np.pi), (0.1, 0.5), (0.0, np.pi), (0.0, np.pi)]  # coords esf
     elif task == 'pick_and_place':
