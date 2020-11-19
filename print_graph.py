@@ -6,7 +6,7 @@ import scipy.stats as sp
 TASK_DIR = "pick_and_place/"
 TASK_NAME = "pick_and_place"
 # coords_type = "esfericas"
-VARIATION = "2container"
+VARIATION = "1container"
 
 file1 = TASK_DIR + "listas_bayesopt_" + TASK_NAME + "_" + VARIATION + ".p"
 resultados1 = pickle.load(open(file1, "rb"))

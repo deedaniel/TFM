@@ -6,11 +6,11 @@ import params_opt
 TASK_DIR = "pick_and_place/"
 # coords_type = 'esfericas'
 TASK_NAME = "pick_and_place"  # + "_" + coords_type
-VARIATION = "2container"
+VARIATION = "1container"
 
 bounds = params_opt.difevol_bounds(task=TASK_NAME, variation=VARIATION)
 
-popsize = 10
+popsize = 7
 maxiter = 300//(len(bounds)*popsize)
 
 listas = []

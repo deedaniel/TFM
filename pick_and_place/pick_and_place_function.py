@@ -104,8 +104,9 @@ class PickAndPlace(object):
                         distance_tip1 = self.robot.tip.check_distance(self.task.place_wp1)
             except ConfigurationPathError:
                 print('Could not find path')
-                reward = -750
-
+                reward = -50
+                if self.variation == "2container":
+                    reward = -750
                 self.pr.stop()  # Stop the simulation
                 self.lists.list_of_parameters.append(wp_params)
                 self.lists.list_of_rewards.append(reward)

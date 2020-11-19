@@ -4,7 +4,7 @@ import numpy as np
 
 TASK_NAME = "pick_and_place"
 # coords_type = "esfericas"
-VARIATION = '2container'
+VARIATION = '1container'
 
 # file = "solucion_bayesopt_" + TASK_NAME + "_" + VARIATION + ".p"
 # wp_params = pickle.load(open(file, "rb"))
@@ -12,7 +12,7 @@ VARIATION = '2container'
 
 function = fun.PickAndPlace(headless_mode=False, variation=VARIATION)  # Inicializacion
 
-pp_params = np.array([-0.0120154,0.0062088,-0.217875,0.0937116,-0.00943356,-0.185821])
+pp_params = np.array([-0.06991656, -0.00729467, -0.24195188, -0., -0.0056952,  -0.14584554])
 reward = function.pick_and_place(pp_params)
 print(reward)
 

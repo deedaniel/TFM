@@ -5,14 +5,14 @@ import params_opt
 
 TASK_DIR = "pick_and_place/"
 # coords_type = 'esfericas'
-VARIATION = "2container"
+VARIATION = "1container"
 TASK_NAME = "pick_and_place"  # + "_" + coords_type
 
 n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME, variation=VARIATION)
 
 params = {'n_iterations': 300,
           'n_iter_relearn': 10,
-          'n_init_samples': 10*n}
+          'n_init_samples': 7*n}
 
 listas = []
 param_solution = []
