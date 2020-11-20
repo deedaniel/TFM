@@ -11,8 +11,8 @@ def bayesopt_bounds(task: str, coords="cartesianas"):
             lb = np.array([-0.3, 0.1, -0.15, -0.1, 0.1, -0.1])  # coords cart
             ub = np.array([0.3, 0.3, 0.25, 0.1, 0.5, 0.1])
         elif coords == 'esfericas':
-            lb = np.array([0.1, 0.0, 0.0, 0.1, 0.0, 0.0])  # coords esf
-            ub = np.array([0.5, np.pi, np.pi, 0.5, np.pi, np.pi])
+            lb = np.array([0.1, np.pi/4, np.pi/8, 0.1, np.pi/6, np.pi/6])  # coords esf
+            ub = np.array([0.5, (np.pi - np.pi/4), (np.pi - np.pi/8), 0.5, (np.pi - np.pi/6), (np.pi - np.pi/6)])
     elif task == 'pick_and_place':
         n = 6  # n dimensions
         lb = np.array([-0.15, -0.15, -0.25, -0.1, -0.1, -0.25])
@@ -40,7 +40,8 @@ def difevol_bounds(task: str, coords="cartesianas"):
         if coords == 'cartesianas':
             bounds = [(-0.3, 0.3), (0.1, 0.3), (-0.15, 0.25), (-0.1, 0.1), (0.2, 0.5), (-0.1, 0.1)]  # coords cart
         elif coords == 'esfericas':
-            bounds = [(0.1, 0.5), (0.0, np.pi), (0.0, np.pi), (0.1, 0.5), (0.0, np.pi), (0.0, np.pi)]  # coords esf
+            bounds = [(0.1, 0.5), (np.pi/4, (np.pi - np.pi/4)), (np.pi/8, (np.pi - np.pi/8)), (0.1, 0.5),
+                      (np.pi/6, (np.pi - np.pi/6)), (np.pi/6, (np.pi - np.pi/6))]  # coords esf
     elif task == 'pick_and_place':
         bounds = [(-0.15, 0.15), (-0.15, 0.15), (-0.25, -0.15), (-0.1, 0.1), (-0.1, 0.1), (-0.25, -0.15)]
     elif task == 'push_button':

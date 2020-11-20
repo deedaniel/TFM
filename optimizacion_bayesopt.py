@@ -9,9 +9,9 @@ TASK_NAME = "avoid_obstacle"
 
 n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME)
 
-params = {'n_iterations': 300,
-          'n_iter_relearn': 10,
-          'n_init_samples': 5*n}
+params = {'n_iterations': 100,
+          'n_iter_relearn': 5,
+          'n_init_samples': 3*n}
 
 listas = []
 param_solution = []

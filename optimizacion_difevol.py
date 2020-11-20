@@ -9,8 +9,8 @@ TASK_NAME = "avoid_obstacle"
 
 bounds = params_opt.difevol_bounds(task=TASK_NAME)
 
-popsize = 5
-maxiter = 300//(len(bounds)*popsize)
+popsize = 3
+maxiter = 100//(len(bounds)*popsize)
 
 listas = []
 params_solution = []
