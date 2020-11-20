@@ -4,14 +4,14 @@ import pickle
 import params_opt
 
 TASK_DIR = "avoid_obstacle/"
-VARIATION = 'cartesianas'
+VARIATION = 'esfericas'
 TASK_NAME = "avoid_obstacle"
 
-n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME)
+n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME, coords=VARIATION)
 
-params = {'n_iterations': 100,
-          'n_iter_relearn': 5,
-          'n_init_samples': 3*n}
+params = {'n_iterations': 200,
+          'n_iter_relearn': 10,
+          'n_init_samples': 5*n}
 
 listas = []
 param_solution = []
@@ -20,7 +20,7 @@ n_experimentos = 5
 function = fun.AvoidObstacle(headless_mode=True)  # Inicializacion
 
 # Coordenadas de la tarea avoid_obstacle
-# function.set_coords(coords=VARIATION)
+function.set_coords(coords=VARIATION)
 
 for i in range(n_experimentos):
     print(i)

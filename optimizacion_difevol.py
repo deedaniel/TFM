@@ -4,13 +4,13 @@ import pickle
 import params_opt
 
 TASK_DIR = "avoid_obstacle/"
-VARIATION = 'cartesianas'
+VARIATION = 'esfericas'
 TASK_NAME = "avoid_obstacle"
 
-bounds = params_opt.difevol_bounds(task=TASK_NAME)
+bounds = params_opt.difevol_bounds(task=TASK_NAME, coords=VARIATION)
 
-popsize = 3
-maxiter = 100//(len(bounds)*popsize)
+popsize = 5
+maxiter = 200//(len(bounds)*popsize)
 
 listas = []
 params_solution = []
@@ -19,7 +19,7 @@ n_experimentos = 5
 function = fun.AvoidObstacle(headless_mode=True)  # Inicializacion
 
 # Coordenadas de la tarea avoid_obstacle
-# function.set_coords(coords=VARIATION)
+function.set_coords(coords=VARIATION)
 
 for i in range(n_experimentos):
     print(i)
