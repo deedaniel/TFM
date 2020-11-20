@@ -1,31 +1,31 @@
 import bayesopt
-import avoid_obstacle.avoid_obstacle_function as fun
+import three_obstacles.three_obstacles_fun as fun
 import pickle
 import params_opt
 
-TASK_DIR = "avoid_obstacle/"
+TASK_DIR = "three_obstacles/"
 VARIATION = 'esfericas'
-TASK_NAME = "avoid_obstacle"
+TASK_NAME = "three_obstacles"
 
-n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME, coords=VARIATION)
+n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME)
 
-params = {'n_iterations': 200,
+params = {'n_iterations': 300,
           'n_iter_relearn': 10,
-          'n_init_samples': 5*n}
+          'n_init_samples': 15*n}
 
 listas = []
 param_solution = []
 n_experimentos = 5
 
-function = fun.AvoidObstacle(headless_mode=True)  # Inicializacion
+function = fun.ThreeObstacles(headless_mode=True)  # Inicializacion
 
 # Coordenadas de la tarea avoid_obstacle
-function.set_coords(coords=VARIATION)
+# function.set_coords(coords=VARIATION)
 
 for i in range(n_experimentos):
     print(i)
     function.clean_lists()
-    mvalue, x_out, error = bayesopt.optimize(function.tray_with_waypoints, n, lb, ub, params)
+    mvalue, x_out, error = bayesopt.optimize(function.avoidance_with_waypoints, n, lb, ub, params)
     print("Result", mvalue, "at", x_out)
     listas_optimizacion = function.return_lists()
     listas.append(listas_optimizacion)
