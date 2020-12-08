@@ -19,9 +19,12 @@ lista_de_resultados = [resultados1, resultados2]
 color = ['b', 'r']
 etiqueta = ['bayesopt', 'differential evolution']
 
+listas_de_best_params = []
+
 for resultado in lista_de_resultados:
     n_iteraciones = 0
     n_experimentos = len(resultado)
+    n_parameters = len(resultado[0].list_of_parameters[0])
 
     # Las iteraciones se calcula de esta forma porque en la optimización con evolucion diferencial el numero de
     # iteraciones no es fijo
@@ -30,12 +33,16 @@ for resultado in lista_de_resultados:
             n_iteraciones = len(resultado[i].list_of_rewards)
 
     lists_of_best_rewards = np.zeros((n_experimentos, n_iteraciones))
+    lists_of_best_parameters = np.zeros((n_experimentos, n_iteraciones, n_parameters))
 
     for i in range(n_experimentos):
         for j in range(n_iteraciones):
             lists_of_best_rewards[i, j] = np.max(resultado[i].list_of_rewards[:(j + 1)])
+            index = np.argmax(resultado[i].list_of_rewards[:(j + 1)])
+            lists_of_best_parameters[i, j, :] = np.array(resultado[i].list_of_parameters[index])
 
     print(lists_of_best_rewards[:, n_iteraciones-1])
+    listas_de_best_params.append(lists_of_best_parameters)
 
     res = np.asarray(lists_of_best_rewards)
     res_mean = np.mean(lists_of_best_rewards, axis=0)
@@ -61,3 +68,5 @@ plt.title(label='Recompensa frente iteraciones')
 plt.legend(loc='lower right')
 plt.savefig(TASK_DIR + "it_reward_" + TASK_NAME + "_" + VARIATION + ".png")
 plt.show()
+
+pickle.dump(listas_de_best_params, open(TASK_DIR + "params_solution_" + TASK_NAME + "_" + VARIATION + ".p", "wb"))
