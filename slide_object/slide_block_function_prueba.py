@@ -11,7 +11,7 @@ VARIATION = '2block'
 
 file2 = "params_solution_" + TASK_NAME + "_" + VARIATION + ".p"
 best_params = pickle.load(open(file2, "rb"))
-params = best_params[1][2, 200]
+params = best_params[1][1, 200]
 
 wp_params = np.array([0.04895007,  0.13835617, -0.19013511,  0.36857607, -0.01570488])
 
