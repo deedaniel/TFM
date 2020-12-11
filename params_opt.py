@@ -60,3 +60,29 @@ def difevol_bounds(task: str, coords="cartesianas", variation="1button"):
     else:
         print('Nombre de la tarea no válido')
     return bounds
+
+
+def sigopt_parameters(task: str, coords="cartesianas", variation="1button"):
+    parameters = dict()
+    if task == 'pick_and_place':
+        if variation == '1container':
+            parameters = [
+                dict(name='x1', type='double', bounds=dict(min=-0.1, max=0.1)),
+                dict(name='y1', type='double', bounds=dict(min=-0.1, max=0.1)),
+                dict(name='z1', type='double', bounds=dict(min=-0.27, max=-0.14)),
+                dict(name='x2', type='double', bounds=dict(min=-0.075, max=0.075)),
+                dict(name='y2', type='double', bounds=dict(min=-0.075, max=0.075)),
+                dict(name='z2', type='double', bounds=dict(min=-0.27, max=-0.14)),
+            ]
+        elif variation == '2container':
+            parameters = [
+                dict(name='x1', type='double', bounds=dict(min=-0.1, max=0.1)),
+                dict(name='y1', type='double', bounds=dict(min=-0.1, max=0.1)),
+                dict(name='z1', type='double', bounds=dict(min=-0.27, max=-0.14)),
+                dict(name='x2', type='double', bounds=dict(min=-0.2, max=0.2)),
+                dict(name='y2', type='double', bounds=dict(min=-0.075, max=0.075)),
+                dict(name='z2', type='double', bounds=dict(min=-0.27, max=-0.14)),
+            ]
+    else:
+        print('Nombre de la tarea no válido')
+    return parameters
