@@ -1,30 +1,31 @@
 from scipy.optimize import differential_evolution
-import avoid_obstacle.avoid_obstacle_function as fun
+import slide_object.slide_block_function as fun
 import pickle
 import params_opt
 
-TASK_DIR = "avoid_obstacle/"
-VARIATION = 'esfericas'
-TASK_NAME = "avoid_obstacle"
+TASK_DIR = "slide_object/"
+# coords_type = 'esfericas'
+TASK_NAME = "slide_block"  # + "_" + coords_type
+VARIATION = "2block"
 
-bounds = params_opt.difevol_bounds(task=TASK_NAME, coords=VARIATION)
+bounds = params_opt.difevol_bounds(task=TASK_NAME, variation=VARIATION)
 
-popsize = 5
-maxiter = 200//(len(bounds)*popsize)
+popsize = 10
+maxiter = 300//(len(bounds)*popsize)
 
 listas = []
 params_solution = []
 n_experimentos = 5
 
-function = fun.AvoidObstacle(headless_mode=True)  # Inicializacion
+function = fun.SlideBlock(headless_mode=True, variation=VARIATION)  # Inicializacion
 
 # Coordenadas de la tarea avoid_obstacle
-function.set_coords(coords=VARIATION)
+# function.set_coords(coords=VARIATION)
 
 for i in range(n_experimentos):
     print(i)
     function.clean_lists()
-    result = differential_evolution(function.tray_with_waypoints, bounds,
+    result = differential_evolution(function.slide_block, bounds,
                                     maxiter=maxiter, popsize=popsize, disp=True, polish=False)
     print(result)
     listas_optimizacion = function.return_lists()
