@@ -16,8 +16,8 @@ params = best_params[0][0, 300]
 
 function = fun.PickAndPlace(headless_mode=False, variation=VARIATION)  # Inicializacion
 
-# pp_params = np.array([-0.06991656, -0.00729467, -0.24195188, -0., -0.0056952,  -0.14584554])
-reward = function.pick_and_place(params)
+pp_params = np.array([0.00506296, -0.00380623, -0.20086191,  0.1014997,   0.00653622, -0.2429435])
+reward = function.pick_and_place(pp_params)
 print(reward)
 
 function.shutdown()  # Apagado
