@@ -8,7 +8,7 @@ from pyrep.objects.shape import Shape
 from pyrep.objects.proximity_sensor import ProximitySensor
 from pyrep.errors import ConfigurationPathError
 
-SCENE_FILE = join(dirname(abspath(__file__)), 'pick_and_place.ttt')
+SCENE_FILE = join(dirname(abspath(__file__)), 'pick_and_place_1container.ttt')
 pr = PyRep()
 pr.launch(SCENE_FILE)
 
