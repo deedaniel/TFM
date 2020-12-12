@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def bayesopt_bounds(task: str, coords="cartesianas"):
+def bayesopt_bounds(task: str, coords="cartesianas", variation="1button"):
     n = 0
     lb = 0
     ub = 0
@@ -15,8 +15,12 @@ def bayesopt_bounds(task: str, coords="cartesianas"):
             ub = np.array([0.5, (np.pi - np.pi/4), (np.pi - np.pi/8), 0.5, (np.pi - np.pi/6), (np.pi - np.pi/6)])
     elif task == 'pick_and_place':
         n = 6  # n dimensions
-        lb = np.array([-0.15, -0.15, -0.25, -0.1, -0.1, -0.25])
-        ub = np.array([0.15, 0.15, -0.14, 0.1, 0.1, -0.14])
+        if variation == "1container":
+            lb = np.array([-0.1, -0.1, -0.27, -0.075, -0.075, -0.27])
+            ub = np.array([0.1, 0.1, -0.14, 0.075, 0.075, -0.14])
+        elif variation == "2container":
+            lb = np.array([-0.1, -0.1, -0.27, -0.2, -0.075, -0.27])
+            ub = np.array([0.1, 0.1, -0.14, 0.2, 0.075, -0.14])
     elif task == 'push_button':
         n = 6  # n dimensions
         lb = np.array([0.0, -0.1, -0.15, -np.pi / 4, 0.0, -np.pi / 2])
@@ -34,7 +38,7 @@ def bayesopt_bounds(task: str, coords="cartesianas"):
     return n, lb, ub
 
 
-def difevol_bounds(task: str, coords="cartesianas"):
+def difevol_bounds(task: str, coords="cartesianas", variation="1button"):
     bounds = []
     if task == 'avoid_obstacle':
         if coords == 'cartesianas':
@@ -43,7 +47,10 @@ def difevol_bounds(task: str, coords="cartesianas"):
             bounds = [(0.1, 0.5), (np.pi/4, (np.pi - np.pi/4)), (np.pi/8, (np.pi - np.pi/8)), (0.1, 0.5),
                       (np.pi/6, (np.pi - np.pi/6)), (np.pi/6, (np.pi - np.pi/6))]  # coords esf
     elif task == 'pick_and_place':
-        bounds = [(-0.15, 0.15), (-0.15, 0.15), (-0.25, -0.15), (-0.1, 0.1), (-0.1, 0.1), (-0.25, -0.15)]
+        if variation == '1container':
+            bounds = [(-0.1, 0.1), (-0.1, 0.1), (-0.27, -0.14), (-0.075, 0.075), (-0.075, 0.075), (-0.27, -0.14)]
+        elif variation == '2container':
+            bounds = [(-0.1, 0.1), (-0.1, 0.1), (-0.27, -0.14), (-0.2, 0.2), (-0.075, 0.075), (-0.27, -0.14)]
     elif task == 'push_button':
         bounds = [(0.0, 0.1), (-0.1, 0.1), (-0.15, 0.0), (np.pi / 4, np.pi / 4), (0.0, np.pi / 3),
                   (-np.pi / 2, np.pi / 2)]
@@ -54,3 +61,29 @@ def difevol_bounds(task: str, coords="cartesianas"):
     else:
         print('Nombre de la tarea no válido')
     return bounds
+
+
+def sigopt_parameters(task: str, coords="cartesianas", variation="1button"):
+    parameters = dict()
+    if task == 'pick_and_place':
+        if variation == '1container':
+            parameters = [
+                dict(name='x1', type='double', bounds=dict(min=-0.1, max=0.1)),
+                dict(name='y1', type='double', bounds=dict(min=-0.1, max=0.1)),
+                dict(name='z1', type='double', bounds=dict(min=-0.27, max=-0.14)),
+                dict(name='x2', type='double', bounds=dict(min=-0.075, max=0.075)),
+                dict(name='y2', type='double', bounds=dict(min=-0.075, max=0.075)),
+                dict(name='z2', type='double', bounds=dict(min=-0.27, max=-0.14)),
+            ]
+        elif variation == '2container':
+            parameters = [
+                dict(name='x1', type='double', bounds=dict(min=-0.1, max=0.1)),
+                dict(name='y1', type='double', bounds=dict(min=-0.1, max=0.1)),
+                dict(name='z1', type='double', bounds=dict(min=-0.27, max=-0.14)),
+                dict(name='x2', type='double', bounds=dict(min=-0.2, max=0.2)),
+                dict(name='y2', type='double', bounds=dict(min=-0.075, max=0.075)),
+                dict(name='z2', type='double', bounds=dict(min=-0.27, max=-0.14)),
+            ]
+    else:
+        print('Nombre de la tarea no válido')
+    return parameters

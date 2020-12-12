@@ -5,15 +5,12 @@ from pyrep.robots.arms.panda import Panda
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 from pyrep.objects.dummy import Dummy
 from pyrep.objects.shape import Shape
-from pyrep.objects.proximity_sensor import ProximitySensor
 from pyrep.errors import ConfigurationPathError
 
 DIR_PATH = dirname(abspath(__file__))
-TTT_FILE = 'pick_and_place.ttt'
 
 
-# Definicion de la estructura del robot
-class Robot(object):
+class Robot(object):  # Definicion de la estructura del robot
     def __init__(self, robot_arm, robot_gripper, robot_tip):
         self.arm = robot_arm
         self.gripper = robot_gripper
@@ -21,41 +18,36 @@ class Robot(object):
         self.pos = robot_arm.get_position()
 
 
-# Declaración y definición de los elementos de la tarea
-class InitTask(object):
-    def __init__(self):
+class InitTask(object):  # Declaración y definición de los elementos de la tarea
+    def __init__(self, variation: str):
         self.block = Shape('block')
-        self.pick = Shape('large_container')
-        self.place = Shape('small_container')
+        self.init_pos = self.block.get_position()
         self.wp0 = Dummy('waypoint0')
         self.wp1 = Dummy('waypoint1')
         self.wp2 = Dummy('waypoint2')
         self.wp3 = Dummy('waypoint3')
         self.pick_wp = Dummy('pick')
-        self.place_wp = Dummy('place')
-        self.success = ProximitySensor('success')
+        self.place_wp0 = Dummy('place0')
+        if variation == '2container':
+            self.place_wp1 = Dummy('place1')
 
 
-class Parameters(object):
-    def __init__(self):
-        self.time = 0
-        self.iteration = 1
-
-
-class Lists(object):
+class Lists(object):  # Definición de las listas para guardar datos de las optimizaciones
     def __init__(self):
         self.list_of_parameters = []
         self.list_of_rewards = []
-        self.iterations = []
 
 
-class PickAndPlace(object):
-    def __init__(self, headless_mode: bool):
+class PickAndPlace(object):  # Declaración de la clase de la tarea de pick and place
+    def __init__(self, headless_mode: bool, variation="1container"):
+        # Inicialización de la tarea, lanzando PyRep, cargando la escena en el simulador, cargando el robot y los
+        # elementos de la escena y inicializando las listas.
         self.pr = PyRep()
-        self.pr.launch(join(DIR_PATH, TTT_FILE), headless=headless_mode)
+        self.variation = variation
+        self.ttt_file = 'pick_and_place_' + self.variation + '.ttt'
+        self.pr.launch(join(DIR_PATH, self.ttt_file), headless=headless_mode)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
-        self.task = InitTask()
-        self.param = Parameters()
+        self.task = InitTask(self.variation)
         self.lists = Lists()
 
     def pick_and_place(self, wp_params: np.array):
@@ -68,14 +60,21 @@ class PickAndPlace(object):
 
         self.task.wp1.set_position(pick_pos)
         self.task.wp3.set_position(place_pos)
-        print(self.task.wp3.get_position())
 
+        # Definición de la trayectoria
         tray = [self.task.wp0, self.task.wp1, self.task.wp0, self.task.wp2, self.task.wp3, self.task.wp2]
 
-        # Ejecución de la trayectoria
+        # Inicio de la simulacion
         self.pr.start()
-        reward = 0
+        self.task.block.set_position(self.task.init_pos)
 
+        # Declaración de los parametros de la recompensa
+        distance_pick = 0.0
+        distance_tip0 = 0.0
+        distance_tip1 = 0.0
+        distance_place1 = 0.0
+
+        # Ejecución de la trayectoria.
         for pos in tray:
             try:
                 path = self.robot.arm.get_path(position=pos.get_position(),
@@ -86,43 +85,55 @@ class PickAndPlace(object):
                     done = path.step()
                     self.pr.step()
 
-                if pos == self.task.wp1:
+                if pos == self.task.wp1:  # Si estamos en WP1 cerramos la pinza para coger el objeto.
                     done = False
-                    # Open the gripper halfway at a velocity of 0.04.
                     while not done:
                         done = self.robot.gripper.actuate(0, velocity=0.04)
                         self.pr.step()
                     self.robot.gripper.grasp(self.task.block)
-                    distance_pick = calc_distance(self.robot.tip.get_position(), self.task.pick_wp.get_position())
-                    reward -= 400 * distance_pick ** 2
-                elif pos == self.task.wp3:
+                    distance_pick = self.robot.tip.check_distance(self.task.pick_wp)
+                elif pos == self.task.wp3:  # Si estamos en WP3 abrimos la pinza para dejar el objeto
                     done = False
                     # Open the gripper halfway at a velocity of 0.04.
                     while not done:
                         done = self.robot.gripper.actuate(1, velocity=0.04)
                         self.pr.step()
                     self.robot.gripper.release()
-                    distance_place = calc_distance(self.task.block.get_position(), self.task.place_wp.get_position())
-                    reward -= 400 * distance_place ** 2
-            except ConfigurationPathError as e:
-                reward = -85
+                    distance_tip0 = self.robot.tip.check_distance(self.task.place_wp0)
+                    if self.variation == '2container':
+                        distance_tip1 = self.robot.tip.check_distance(self.task.place_wp1)
+            except ConfigurationPathError:
+                # Si no se encuentra una configuracion para los waypoints de la trayectoria se asigna una recompensa
                 print('Could not find path')
+                reward = -50
+                if self.variation == "2container":
+                    reward = -750
+                self.pr.stop()  # Stop the simulation
+                self.lists.list_of_parameters.append(wp_params)
+                self.lists.list_of_rewards.append(reward)
+                return -reward
+
+        distance_place0 = calc_distance(self.task.block.get_position(), self.task.place_wp0.get_position())
+        if self.variation == '2container':
+            distance_place1 = calc_distance(self.task.block.get_position(), self.task.place_wp1.get_position())
+        # Calculo de la recompensa
+        reward = - (200 * distance_pick ** 2 + 200 * distance_place0 ** 2 + 400 * distance_place1 ** 2
+                    + 3500 * distance_place0 * distance_place1 + 100 * distance_tip0 ** 2 + 200 * distance_tip1 ** 2 +
+                    + 1750 * distance_tip0 * distance_tip1)
 
         self.pr.stop()  # Stop the simulation
-        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, wp_params)
-        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, reward)
-        self.lists.iterations = np.append(self.lists.iterations, self.param.iteration)
-        self.param.iteration += 1
+        self.lists.list_of_parameters.append(wp_params) # Se guardan los parametros del episodio
+        self.lists.list_of_rewards.append(reward)  # Se guarda la recompensa del episodio
         return -reward
 
     def shutdown(self):
         self.pr.shutdown()  # Close the application
 
     def clean_lists(self):
-        self.lists = Lists()
+        self.lists = Lists()  # Se limpian las listas
 
     def return_lists(self):
-        return self.lists
+        return self.lists  # Devolver las listas
 
 
 def calc_distance(vector1: np.array, vector2: np.array):

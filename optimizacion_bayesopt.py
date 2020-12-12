@@ -7,7 +7,7 @@ TASK_DIR = "three_obstacles/"
 VARIATION = 'esfericas'
 TASK_NAME = "three_obstacles"
 
-n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME)
+n, lb, ub = params_opt.bayesopt_bounds(task=TASK_NAME, variation=VARIATION)
 
 params = {'n_iterations': 300,
           'n_iter_relearn': 10,
