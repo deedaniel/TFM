@@ -10,7 +10,6 @@ import math
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 
 DIR_PATH = dirname(abspath(__file__))
-TTT_FILE = 'slide_block.ttt'
 
 
 class Robot(object):  # Estructura del robot

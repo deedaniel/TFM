@@ -9,7 +9,7 @@ from pyrep.objects.shape import Shape
 from pyrep.objects.proximity_sensor import ProximitySensor
 from pyrep.errors import ConfigurationPathError
 
-SCENE_FILE = join(dirname(abspath(__file__)), 'slide_block.ttt')
+SCENE_FILE = join(dirname(abspath(__file__)), 'slide_block_1block.ttt')
 pr = PyRep()
 pr.launch(SCENE_FILE)
 
