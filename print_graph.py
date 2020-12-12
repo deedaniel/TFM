@@ -6,12 +6,13 @@ import scipy.stats as sp
 TASK_DIR = "slide_object/"
 TASK_NAME = "slide_block"
 # coords_type = "esfericas"
-VARIATION = "2block"
+VARIATION = "1block"
 
 file1 = TASK_DIR + "listas_bayesopt_" + TASK_NAME + "_" + VARIATION + ".p"
 resultados1 = pickle.load(open(file1, "rb"))
 
 file2 = TASK_DIR + "listas_difevol_" + TASK_NAME + "_" + VARIATION + ".p"
+# file2 = TASK_DIR + "listas_difevol_slide_block_1block.p"
 resultados2 = pickle.load(open(file2, "rb"))
 
 lista_de_resultados = [resultados1, resultados2]
