@@ -1,14 +1,14 @@
 from sigopt import Connection
-import pick_and_place.pick_and_place_function as fun
+import slide_object.slide_block_function as fun
 import numpy as np
 import pickle
 import params_opt
-from sigopt.examples import franke_function
+# from sigopt.examples import franke_function
 
-TASK_DIR = "pick_and_place/"
+TASK_DIR = "slide_object/"
 # coords_type = 'esfericas'
-VARIATION = "2container"
-TASK_NAME = "pick_and_place"  # + "_" + coords_type
+VARIATION = "2block"
+TASK_NAME = "slide_block"  # + "_" + coords_type
 
 SIGOPT_API_TOKEN = "AVRITBIJFQBNAZWRCPLCZLODWFKLNGMPJPFXLXYZLTJVHOSE"
 conn = Connection(client_token=SIGOPT_API_TOKEN)
@@ -17,7 +17,7 @@ listas = []
 param_solution = []
 n_experiments = 5
 
-function = fun.PickAndPlace(headless_mode=True, variation=VARIATION)  # Inicializacion
+function = fun.SlideBlock(headless_mode=True, variation=VARIATION)  # Inicializacion
 
 
 # Evaluate your model with the suggested parameter assignments
@@ -25,16 +25,14 @@ def evaluate_model(assignments):
     params = np.array([assignments['x1'],
                        assignments['y1'],
                        assignments['z1'],
-                       assignments['x2'],
-                       assignments['y2'],
-                       assignments['z2']]
-                      )
-    return function.pick_and_place(wp_params=params)
+                       assignments['d'],
+                       assignments['phi']])
+    return function.slide_block(slide_params=params)
 
 
 for i in range(n_experiments):
     experiment = conn.experiments().create(
-        name='Optimizacion Pick And Place ' + str(i),
+        name='Optimizacion Slide Block ' + str(i),
         # Define which parameters you would like to tune
         parameters=params_opt.sigopt_parameters(task=TASK_NAME, variation=VARIATION),
         metrics=[dict(name='function_value', objective='minimize')],
@@ -68,10 +66,8 @@ for i in range(n_experiments):
     solution = np.array([best_assignments['x1'],
                          best_assignments['y1'],
                          best_assignments['z1'],
-                         best_assignments['x2'],
-                         best_assignments['y2'],
-                         best_assignments['z2']]
-                        )
+                         best_assignments['d'],
+                         best_assignments['phi']])
 
     listas.append(listas_optimizacion)
     param_solution.append(solution)
