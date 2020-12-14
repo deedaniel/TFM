@@ -24,8 +24,12 @@ def bayesopt_bounds(task: str, coords="cartesianas", variation="1button"):
             ub = np.array([0.1, 0.1, -0.14, 0.2, 0.075, -0.14])
     elif task == 'push_button':
         n = 6  # n dimensions
-        lb = np.array([0.0, -0.1, -0.15, -np.pi / 4, 0.0, -np.pi / 2])
-        ub = np.array([0.1, 0.1, 0.0, np.pi / 4, np.pi / 3, np.pi / 2])
+        if variation == "1button":
+            lb = np.array([0.0, -0.05, -0.15, -np.pi / 4, 0.0, -np.pi / 2])
+            ub = np.array([0.1, 0.05, 0.0, np.pi / 4, np.pi / 3, np.pi / 2])
+        elif variation == "2button":
+            lb = np.array([-0.1, -0.05, -0.2, -np.pi / 4, 0.0, -np.pi / 2])
+            ub = np.array([0.15, 0.05, 0.0, np.pi / 4, np.pi / 3, np.pi / 2])
     elif task == 'slide_block':
         n = 5  # n dimensions
         if variation == '1block':
@@ -57,8 +61,12 @@ def difevol_bounds(task: str, coords="cartesianas", variation="1button"):
         elif variation == '2container':
             bounds = [(-0.1, 0.1), (-0.1, 0.1), (-0.27, -0.14), (-0.2, 0.2), (-0.075, 0.075), (-0.27, -0.14)]
     elif task == 'push_button':
-        bounds = [(0.0, 0.1), (-0.1, 0.1), (-0.15, 0.0), (np.pi / 4, np.pi / 4), (0.0, np.pi / 3),
-                  (-np.pi / 2, np.pi / 2)]
+        if variation == '1button':
+            bounds = [(0.0, 0.1), (-0.05, 0.05), (-0.15, 0.0), (-np.pi / 4, np.pi / 4), (0.0, np.pi / 3),
+                      (-np.pi / 2, np.pi / 2)]
+        elif variation == '2button':
+            bounds = [(-0.1, 0.15), (-0.05, 0.05), (-0.2, 0.0), (-np.pi / 4, np.pi / 4), (0.0, np.pi / 3),
+                      (-np.pi / 2, np.pi / 2)]
     elif task == 'slide_block':
         if variation == '1block':
             bounds = [(-0.2, 0.2), (0.0, 0.2), (-0.25, 0.0), (0.05, 0.4), (-np.pi / 4, np.pi / 4)]
@@ -71,7 +79,7 @@ def difevol_bounds(task: str, coords="cartesianas", variation="1button"):
     return bounds
 
 
-def sigopt_parameters(task: str, coords="cartesianas", variation="1button"):
+def sigopt_parameters(task: str, variation="1button"):
     parameters = dict()
     if task == 'pick_and_place':
         if variation == '1container':

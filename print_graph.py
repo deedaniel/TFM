@@ -21,13 +21,9 @@ resultados2 = pickle.load(open(file2, "rb"))
 lista_de_resultados = [resultados1, resultados2]
 # lista_de_resultados = [resultados1]
 
-# color = ['b', 'r', 'g']
-color = ['b', 'r']
+color = ['b', 'r', 'g']
 
-# etiqueta = ['bayesopt', 'differential evolution', 'sigopt']
-etiqueta = ['bayesopt', 'differential evolution']
-# etiqueta = ['bayesopt']
-
+etiqueta = ['bayesopt', 'differential evolution', 'sigopt']
 
 listas_de_best_params = []
 
@@ -77,7 +73,7 @@ plt.xlabel(xlabel='Iteraciones')
 plt.title(label='Recompensa frente iteraciones')
 plt.legend(loc='lower right')
 plt.ylim(bottom=-300)
-plt.savefig(TASK_DIR + "it_reward_" + TASK_NAME + "_" + VARIATION + "_prueba.png")
+plt.savefig(TASK_DIR + "it_reward_" + TASK_NAME + "_" + VARIATION + ".png")
 plt.show()
 
 pickle.dump(listas_de_best_params, open(TASK_DIR + "params_solution_" + TASK_NAME + "_" + VARIATION + ".p", "wb"))
