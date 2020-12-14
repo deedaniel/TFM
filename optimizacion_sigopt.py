@@ -31,6 +31,7 @@ def evaluate_model(assignments):
 
 
 for i in range(n_experiments):
+    function.clean_lists()
     experiment = conn.experiments().create(
         name='Optimizacion Slide Block ' + str(i),
         # Define which parameters you would like to tune
