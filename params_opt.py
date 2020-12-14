@@ -49,10 +49,10 @@ def difevol_bounds(task: str, coords="cartesianas", variation="1button"):
         bounds = [(-0.15, 0.15), (-0.15, 0.15), (-0.25, -0.15), (-0.1, 0.1), (-0.1, 0.1), (-0.25, -0.15)]
     elif task == 'push_button':
         if variation == '1button':
-            bounds = [(0.0, 0.1), (-0.05, 0.05), (-0.15, 0.0), (np.pi / 4, np.pi / 4), (0.0, np.pi / 3),
+            bounds = [(0.0, 0.1), (-0.05, 0.05), (-0.15, 0.0), (-np.pi / 4, np.pi / 4), (0.0, np.pi / 3),
                       (-np.pi / 2, np.pi / 2)]
         elif variation == '2button':
-            bounds = [(-0.1, 0.15), (-0.05, 0.05), (-0.2, 0.0), (np.pi / 4, np.pi / 4), (0.0, np.pi / 3),
+            bounds = [(-0.1, 0.15), (-0.05, 0.05), (-0.2, 0.0), (-np.pi / 4, np.pi / 4), (0.0, np.pi / 3),
                       (-np.pi / 2, np.pi / 2)]
     elif task == 'slide_block':
         bounds = [(-0.2, 0.2), (0.0, 0.2), (-0.25, 0.0), (0.05, 0.4), (-np.pi / 4, np.pi / 4)]
