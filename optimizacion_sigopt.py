@@ -1,14 +1,13 @@
 from sigopt import Connection
-import slide_object.slide_block_function as fun
-import numpy as np
+import pick_and_place.pick_and_place_function as fun
 import pickle
 import params_opt
 # from sigopt.examples import franke_function
 
-TASK_DIR = "slide_object/"
+TASK_DIR = "three_obstacles/"
 # coords_type = 'esfericas'
-VARIATION = "2block"
-TASK_NAME = "slide_block"  # + "_" + coords_type
+VARIATION = "three_obstacles"
+TASK_NAME = "pick_and_place"
 
 SIGOPT_API_TOKEN = "AVRITBIJFQBNAZWRCPLCZLODWFKLNGMPJPFXLXYZLTJVHOSE"
 conn = Connection(client_token=SIGOPT_API_TOKEN)
@@ -17,23 +16,20 @@ listas = []
 param_solution = []
 n_experiments = 5
 
-function = fun.SlideBlock(headless_mode=True, variation=VARIATION)  # Inicializacion
+function = fun.PickAndPlace(headless_mode=True, variation=VARIATION)  # Inicializacion
+# function.set_coords(coords=VARIATION)
 
 
 # Evaluate your model with the suggested parameter assignments
 def evaluate_model(assignments):
-    params = np.array([assignments['x1'],
-                       assignments['y1'],
-                       assignments['z1'],
-                       assignments['d'],
-                       assignments['phi']])
-    return function.slide_block(slide_params=params)
+    params = params_opt.sigopt_assignments(task=TASK_NAME, assignments=assignments)
+    return function.pick_and_place(wp_params=params)
 
 
 for i in range(n_experiments):
     function.clean_lists()
     experiment = conn.experiments().create(
-        name='Optimizacion Slide Block ' + str(i),
+        name='Optimizacion Pick and Place 2var ' + str(i),
         # Define which parameters you would like to tune
         parameters=params_opt.sigopt_parameters(task=TASK_NAME, variation=VARIATION),
         metrics=[dict(name='function_value', objective='minimize')],
@@ -64,11 +60,11 @@ for i in range(n_experiments):
     print("Explore your experiment: https://app.sigopt.com/experiment/" + experiment.id + "/analysis")
 
     listas_optimizacion = function.return_lists()
-    solution = np.array([best_assignments['x1'],
-                         best_assignments['y1'],
-                         best_assignments['z1'],
-                         best_assignments['d'],
-                         best_assignments['phi']])
+    solution = params_opt.sigopt_assignments(task=TASK_NAME, assignments=best_assignments)
+
+    pickle.dump(listas_optimizacion, open(TASK_DIR + "listas_sigopt_" + TASK_NAME + "_" + VARIATION + "_" + str(i)
+                                          + ".p", "wb"))
+    pickle.dump(solution, open(TASK_DIR + "solucion_sigopt_" + TASK_NAME + "_" + VARIATION + "_" + str(i) + ".p", "wb"))
 
     listas.append(listas_optimizacion)
     param_solution.append(solution)

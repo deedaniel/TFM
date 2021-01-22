@@ -158,7 +158,6 @@ class AvoidObstacle(object):
         pickle.dump(self.lists, open("listas_brute_force.p", "wb"))
 
     def tray_with_waypoints(self, wp_params: np.array):
-        print(wp_params)
         if self.param.coords == 'cartesianas':
             waypoint1, waypoint2 = self.get_waypoints_cart(wp_params)
         elif self.param.coords == 'esfericas':

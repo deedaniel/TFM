@@ -81,7 +81,26 @@ def difevol_bounds(task: str, coords="cartesianas", variation="1button"):
 
 def sigopt_parameters(task: str, variation="1button"):
     parameters = dict()
-    if task == 'pick_and_place':
+    if task == 'avoid_obstacle':
+        if variation == 'cartesianas':
+            parameters = [
+                dict(name='x1', type='double', bounds=dict(min=-0.3, max=0.3)),
+                dict(name='y1', type='double', bounds=dict(min=0.1, max=0.3)),
+                dict(name='z1', type='double', bounds=dict(min=-0.15, max=0.25)),
+                dict(name='x2', type='double', bounds=dict(min=-0.1, max=0.1)),
+                dict(name='y2', type='double', bounds=dict(min=0.1, max=0.5)),
+                dict(name='z2', type='double', bounds=dict(min=-0.1, max=0.1)),
+            ]
+        elif variation == 'esfericas':
+            parameters = [
+                dict(name='x1', type='double', bounds=dict(min=0.1, max=0.5)),
+                dict(name='y1', type='double', bounds=dict(min=-0.1, max=0.1)),
+                dict(name='z1', type='double', bounds=dict(min=-0.27, max=-0.14)),
+                dict(name='x2', type='double', bounds=dict(min=-0.2, max=0.2)),
+                dict(name='y2', type='double', bounds=dict(min=-0.075, max=0.075)),
+                dict(name='z2', type='double', bounds=dict(min=-0.27, max=-0.14)),
+            ]
+    elif task == 'pick_and_place':
         if variation == '1container':
             parameters = [
                 dict(name='x1', type='double', bounds=dict(min=-0.1, max=0.1)),
@@ -100,6 +119,25 @@ def sigopt_parameters(task: str, variation="1button"):
                 dict(name='y2', type='double', bounds=dict(min=-0.075, max=0.075)),
                 dict(name='z2', type='double', bounds=dict(min=-0.27, max=-0.14)),
             ]
+    elif task == 'push_button':
+        if variation == '1button':
+            parameters = [
+                dict(name='x', type='double', bounds=dict(min=0.0, max=0.1)),
+                dict(name='y', type='double', bounds=dict(min=-0.05, max=0.05)),
+                dict(name='z', type='double', bounds=dict(min=-0.15, max=0.0)),
+                dict(name='alpha', type='double', bounds=dict(min=-np.pi / 4, max=np.pi / 4)),
+                dict(name='beta', type='double', bounds=dict(min=0.0, max=np.pi / 3)),
+                dict(name='gamma', type='double', bounds=dict(min=-np.pi / 2, max=np.pi / 2)),
+            ]
+        elif variation == '2button':
+            parameters = [
+                dict(name='x', type='double', bounds=dict(min=-0.1, max=0.5)),
+                dict(name='y', type='double', bounds=dict(min=-0.05, max=0.05)),
+                dict(name='z', type='double', bounds=dict(min=-0.2, max=0.0)),
+                dict(name='alpha', type='double', bounds=dict(min=-np.pi / 4, max=np.pi / 4)),
+                dict(name='beta', type='double', bounds=dict(min=0.0, max=np.pi / 3)),
+                dict(name='gamma', type='double', bounds=dict(min=-np.pi / 2, max=np.pi / 2)),
+            ]
     elif task == 'slide_block':
         if variation == '1block':
             parameters = [
@@ -117,6 +155,39 @@ def sigopt_parameters(task: str, variation="1button"):
                 dict(name='d', type='double', bounds=dict(min=0.2, max=0.5)),
                 dict(name='phi', type='double', bounds=dict(min=-np.pi / 4, max=np.pi / 4)),
             ]
+    elif task == 'three_obstacles':
+        parameters = [
+            dict(name='r1', type='double', bounds=dict(min=0.1, max=0.6)),
+            dict(name='tita1', type='double', bounds=dict(min=0.0, max=70 * np.pi / 180)),
+            dict(name='r2', type='double', bounds=dict(min=0.1, max=0.4)),
+            dict(name='tita2', type='double', bounds=dict(min=-np.pi / 4, max=np.pi / 4)),
+        ]
     else:
         print('Nombre de la tarea no válido')
     return parameters
+
+
+def sigopt_assignments(task: str, assignments: dict):
+    params = []
+    if task == 'pick_and_place':
+        params = np.array([assignments['x1'],
+                           assignments['y1'],
+                           assignments['z1'],
+                           assignments['x2'],
+                           assignments['y2'],
+                           assignments['z2']])
+    elif task == 'push_button':
+        params = np.array([assignments['x'],
+                           assignments['y'],
+                           assignments['z'],
+                           assignments['alpha'],
+                           assignments['beta'],
+                           assignments['gamma']])
+    elif task == 'three_obstacles':
+        params = np.array([assignments['r1'],
+                           assignments['tita1'],
+                           assignments['r2'],
+                           assignments['tita2']])
+    else:
+        print('Nombre de la tarea no válido')
+    return params
