@@ -3,15 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as sp
 
-TASK_DIR = "three_obstacles/"
-TASK_NAME = "three_obstacles"
+TASK_DIR = "slide_object/"
+TASK_NAME = "slide_block"
 # coords_type = "esfericas"
-VARIATION = ""
+VARIATION = "2block"
 
-file1 = TASK_DIR + "listas_bayesopt_" + TASK_NAME + ".p"
+file1 = TASK_DIR + "listas_bayesopt_" + TASK_NAME + "_" + VARIATION + ".p"
 resultados1 = pickle.load(open(file1, "rb"))
 
-file2 = TASK_DIR + "listas_difevol_" + TASK_NAME + ".p"
+file2 = TASK_DIR + "listas_difevol_" + TASK_NAME + "_" + VARIATION + ".p"
 resultados2 = pickle.load(open(file2, "rb"))
 
 file3 = TASK_DIR + "listas_sigopt_" + TASK_NAME + "_" + VARIATION + ".p"
@@ -72,7 +72,7 @@ plt.ylabel(ylabel='Recompensa')
 plt.xlabel(xlabel='Iteraciones')
 plt.title(label='Recompensa frente iteraciones')
 plt.legend(loc='lower right')
-# plt.ylim(bottom=-10, top=0)
+plt.ylim(bottom=-300, top=50)
 plt.savefig(TASK_DIR + "it_reward_" + TASK_NAME + "_" + VARIATION + ".png")
 plt.show()
 
