@@ -6,11 +6,9 @@ from pyrep.objects.dummy import Dummy
 from pyrep.objects.shape import Shape
 from pyrep.errors import ConfigurationPathError
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
-import pickle
 import sys
 
 DIR_PATH = dirname(abspath(__file__))
-TTT_FILE = 'avoid_obstacle.ttt'
 
 
 class Robot(object):  # Estructura del robot
@@ -22,35 +20,16 @@ class Robot(object):  # Estructura del robot
         self.pos = self.arm.get_position()
 
 
-class Target(object):  # Estructura del objetivo
-    def __init__(self):
-        self.dummy = Dummy('target0')
-        self.initial_pos = self.dummy.get_position()
-        self.pos = []
-
-
-class Waypoints(object):
-    def __init__(self):
+class InitTask(object):
+    def __init__(self, variation: str):
         self.initial_pos = Dummy('target0')
         self.final_pos = Dummy('target1')
-
-
-class Obstacle(object):  # Estructura del obstaculo
-    def __init__(self):
-        self.obstacle = Shape('obstacle')
-        self.pos = self.obstacle.get_position()  # Posicion del obstaculo
-        self.radius = 0.3  # Radio del obstaculo
-
-
-class Parameters(object):
-    def __init__(self):
-        self.linear_delta = 0.05  # 5 centimetros
-        # Parametros de evitacion: radio y numero de pasos para hacer la trayectoria
-        self.radius = 0.3
-        self.steps = 10
-        self.circular_delta = np.pi / (self.steps - 1)  # 180 / (steps-1) grados para hacer semicircunferencia
-        self.time = 0
-        self.coords = 'cartesianas'
+        if variation == '1obstacle':
+            self.obstacle = Shape('obstacle')
+        elif variation == '3obstacle':
+            self.obstacle0 = Shape('Cylinder')
+            self.obstacle1 = Shape('Cylinder0')
+            self.obstacle2 = Shape('Cylinder1')
 
 
 class Lists(object):
@@ -60,119 +39,33 @@ class Lists(object):
 
 
 class AvoidObstacle(object):
-    def __init__(self, headless_mode: bool):
+    def __init__(self, headless_mode: bool, variation='1obstacle', coords='cartesianas'):
+        # Inicialización de la tarea, lanzando PyRep, cargando la escena en el simulador, cargando el robot y los
+        # elementos de la escena y inicializando las listas.
         self.pyrep = PyRep()
-        self.pyrep.launch(join(DIR_PATH, TTT_FILE), headless=headless_mode)
+        self.variation = variation
+        self.coords = coords
+        self.ttt_file = 'avoid_obstacle_' + self.variation + '.ttt'
+        self.pyrep.launch(join(DIR_PATH, self.ttt_file), headless=headless_mode)
         self.robot = Robot(Panda(), PandaGripper(), Dummy('Panda_tip'))
-        self.obstacle = Obstacle()
-        self.target = Target()
-        self.param = Parameters()
-        self.waypoints = Waypoints()
+        self.task = InitTask(self.variation)
         self.lists = Lists()
 
-    def tray_circular(self, radius):
-        self.pyrep.start()  # We start the simulation
-
-        self.target.pos = self.target.initial_pos  # We set the pos as the initial pos
-
-        # We try to get a path to the initial target of the path
-        try:
-            path = self.robot.arm.get_path(position=self.target.pos,
-                                           euler=[0, np.radians(180), 0])
-
-            # We execute the path
-            done = False
-            while not done:
-                done = path.step()
-                self.pyrep.step()
-            print('Reached initial target.')
-        except ConfigurationPathError:
-            print('Could not find path.')
-            exit()
-
-        distance_3d = np.array(self.obstacle.pos - self.target.pos)
-        distance = np.linalg.norm(distance_3d)
-
-        # Mienstras la distancia al objecto sea menor que el radio del obstaculo, hacemos trayctoria lineal
-        while (distance - self.param.linear_delta) > radius:
-            # Calcular la siguiente posición
-            next_pos = self.target.pos + np.array([0, self.param.linear_delta, 0])
-            self.target.pos = next_pos
-
-            try:
-                path = self.robot.arm.get_path(position=self.target.pos,
-                                               euler=[0, np.radians(180), 0],
-                                               ignore_collisions=True)
-            except ConfigurationPathError:
-                print('Could not find path')
-                continue
-
-            # Step the simulation and advance the agent along the path
-            done = False
-            while not done:
-                done = path.step()
-                self.pyrep.step()
-
-                distance = calc_distance(self.obstacle.pos, self.target.pos)
-
-        self.param.time = 0  # Inicializamos el tiempo
-
-        # Hacemos trayectoria circular
-        for step in range(self.param.steps):
-            # Calculate the next target
-            next_pos = self.obstacle.pos + np.array([0,
-                                                     -radius * np.cos(step * self.param.circular_delta),
-                                                     radius * np.sin(step * self.param.circular_delta)])
-            self.target.pos = next_pos
-
-            try:
-                path = self.robot.arm.get_path(position=self.target.pos,
-                                               euler=[0, np.radians(180), 0],
-                                               ignore_collisions=True)
-            except ConfigurationPathError:
-                print('Could not find path')
-                continue
-
-            # Step the simulation and advance the agent along the path
-            done = False
-            while not done:
-                done = path.step()
-                self.pyrep.step()
-                self.param.time += self.pyrep.get_simulation_timestep()
-
-        reward = (-(20 * (1 - self.obstacle.radius / radius)) ** 2 + 2) + 10 / self.param.time
-        self.pyrep.stop()  # Stop the simulation
-        self.lists.list_of_parameters = np.append(self.lists.list_of_parameters, radius)
-        self.lists.list_of_rewards = np.append(self.lists.list_of_rewards, -reward)
-        return -reward
-
-    def avoidance_brute_force(self, radius_interval: list):
-        radius_step = 0.005
-        self.clean_lists()
-        self.param.radius = radius_interval[0]
-
-        while self.param.radius <= radius_interval[1]:
-            self.tray_circular(self.param.radius)
-            self.param.radius += radius_step
-
-        pickle.dump(self.lists, open("listas_brute_force.p", "wb"))
-
-    def tray_with_waypoints(self, wp_params: np.array):
-        if self.param.coords == 'cartesianas':
-            waypoint1, waypoint2 = self.get_waypoints_cart(wp_params)
-        elif self.param.coords == 'esfericas':
-            waypoint1, waypoint2 = self.get_waypoints_esf(wp_params)
+    def avoid1obstacle(self, wp_params: np.array):
+        if self.coords == 'cartesianas':
+            waypoint1, waypoint2 = self.get_waypoints_cart3d(wp_params)
+        elif self.coords == 'esfericas':
+            waypoint1, waypoint2 = self.get_waypoints_esf3d(wp_params)
         else:
-            waypoint1, waypoint2 = [], []
             print('Error al definir el tipo de coordenadas')
             sys.exit()
 
         # Definición de la trayectoria
-        tray = [self.waypoints.initial_pos, waypoint1, waypoint2, self.waypoints.final_pos]
+        tray = [self.task.initial_pos, waypoint1, waypoint2, self.task.final_pos]
 
-        d_tray_1 = self.waypoints.initial_pos.check_distance(waypoint1)
+        d_tray_1 = self.task.initial_pos.check_distance(waypoint1)
         d_tray_2 = waypoint1.check_distance(waypoint2)
-        d_tray_3 = waypoint2.check_distance(self.waypoints.final_pos)
+        d_tray_3 = waypoint2.check_distance(self.task.final_pos)
         d_tray = d_tray_1 + d_tray_2 + d_tray_3
 
         r_long = - 4 * d_tray ** 2
@@ -191,8 +84,8 @@ class AvoidObstacle(object):
                     done = path.step()
                     self.pyrep.step()
 
-                    distance_obstacle_gripper = self.robot.gripper.check_distance(self.obstacle.obstacle)
-                    distance_obstacle_robot = self.robot.link5.check_distance(self.obstacle.obstacle)
+                    distance_obstacle_gripper = self.robot.gripper.check_distance(self.task.obstacle)
+                    distance_obstacle_robot = self.robot.link5.check_distance(self.task.obstacle)
                     r_obstacle -= (20 * np.exp(-150 * distance_obstacle_gripper) +
                                    20 * np.exp(-150 * distance_obstacle_robot))
             except ConfigurationPathError:
@@ -212,6 +105,59 @@ class AvoidObstacle(object):
         self.lists.list_of_rewards.append(reward)
         return -reward
 
+    def avoid3obstacles(self, wp_params: np.array):
+        if self.coords == 'cartesianas':
+            waypoint1, waypoint2 = self.get_waypoints_cart2d(wp_params)
+        elif self.coords == 'esfericas':
+            waypoint1, waypoint2 = self.get_waypoints_esf2d(wp_params)
+        else:
+            print('Error al definir el tipo de coordenadas')
+            sys.exit()
+
+        # Definición de la trayectoria
+        tray = [self.task.initial_pos, waypoint1, waypoint2, self.task.final_pos]
+
+        d_tray_1 = self.task.initial_pos.check_distance(waypoint1)
+        d_tray_2 = waypoint1.check_distance(waypoint2)
+        d_tray_3 = waypoint2.check_distance(self.task.final_pos)
+        d_tray = d_tray_1 + d_tray_2 + d_tray_3
+
+        # Ejecución de la trayectoria
+        self.pyrep.start()
+        reward_long = - 4 * d_tray ** 2
+        reward_dist = 0.0
+
+        for pos in tray:
+            try:
+                path = self.robot.arm.get_linear_path(position=pos.get_position(),
+                                                      euler=[0.0, np.radians(180), 0.0])
+                # Step the simulation and advance the agent along the path
+                done = False
+                while not done:
+                    done = path.step()
+                    self.pyrep.step()
+
+                    distance_obstacle0 = self.robot.gripper.check_distance(self.task.obstacle0)
+                    distance_obstacle1 = self.robot.gripper.check_distance(self.task.obstacle1)
+                    distance_obstacle2 = self.robot.gripper.check_distance(self.task.obstacle2)
+
+                    reward_dist -= (20 * np.exp(-300 * distance_obstacle0) +
+                                    20 * np.exp(-300 * distance_obstacle1) +
+                                    20 * np.exp(-300 * distance_obstacle2))
+            except ConfigurationPathError:
+                reward = -400.0
+                self.pyrep.stop()
+                self.lists.list_of_parameters.append(list(wp_params))
+                self.lists.list_of_rewards.append(reward)
+                return -reward
+
+        reward = reward_long + reward_dist
+
+        self.pyrep.stop()
+        self.lists.list_of_parameters.append(list(wp_params))
+        self.lists.list_of_rewards.append(reward)
+        return -reward
+
     def shutdown(self):
         self.pyrep.shutdown()  # Close the application
 
@@ -221,15 +167,9 @@ class AvoidObstacle(object):
     def return_lists(self):
         return self.lists
 
-    def set_coords(self, coords: str):
-        self.param.coords = coords
-
-    def get_coords(self):
-        return self.param.coords
-
-    def get_waypoints_cart(self, wp_params: np.array):
+    def get_waypoints_cart3d(self, wp_params: np.array):
         pos1_rel = np.array([wp_params[0], wp_params[1], wp_params[2]])
-        pos1_abs = pos1_rel + self.waypoints.initial_pos.get_position()
+        pos1_abs = pos1_rel + self.task.initial_pos.get_position()
         waypoint1 = Dummy.create()
         waypoint1.set_position(pos1_abs)
 
@@ -240,14 +180,14 @@ class AvoidObstacle(object):
 
         return waypoint1, waypoint2
 
-    def get_waypoints_esf(self, wp_params: np.array):
+    def get_waypoints_esf3d(self, wp_params: np.array):
         radio1 = wp_params[0]
         tita1 = wp_params[1]
         phi1 = wp_params[2]
         pos1_rel = np.array([radio1*np.sin(tita1)*np.cos(phi1),
                              radio1*np.sin(tita1)*np.sin(phi1),
                              radio1*np.cos(tita1)])
-        pos1_abs = pos1_rel + self.waypoints.initial_pos.get_position()
+        pos1_abs = pos1_rel + self.task.initial_pos.get_position()
         waypoint1 = Dummy.create()
         waypoint1.set_position(pos1_abs)
 
@@ -257,6 +197,40 @@ class AvoidObstacle(object):
         pos2_rel = np.array([radio2*np.sin(tita2)*np.cos(phi2),
                              radio2*np.sin(tita2)*np.sin(phi2),
                              radio2*np.cos(tita2)])
+        pos2_abs = pos2_rel + pos1_abs
+        waypoint2 = Dummy.create()
+        waypoint2.set_position(pos2_abs)
+
+        return waypoint1, waypoint2
+
+    def get_waypoints_cart2d(self, wp_params: np.array):
+        pos1_rel = np.array([wp_params[0], wp_params[1], 0.0])
+        pos1_abs = pos1_rel + self.task.initial_pos.get_position()
+        waypoint1 = Dummy.create()
+        waypoint1.set_position(pos1_abs)
+
+        pos2_rel = np.array([wp_params[2], wp_params[3], 0.0])
+        pos2_abs = pos2_rel + pos1_abs
+        waypoint2 = Dummy.create()
+        waypoint2.set_position(pos2_abs)
+
+        return waypoint1, waypoint2
+
+    def get_waypoints_esf2d(self, wp_params: np.array):
+        radio1 = wp_params[0]
+        tita1 = wp_params[1]
+        pos1_rel = np.array([radio1 * np.sin(tita1),
+                             radio1 * np.cos(tita1),
+                             0])
+        pos1_abs = pos1_rel + self.task.initial_pos.get_position()
+        waypoint1 = Dummy.create()
+        waypoint1.set_position(pos1_abs)
+
+        radio2 = wp_params[2]
+        tita2 = wp_params[3]
+        pos2_rel = np.array([radio2 * np.sin(tita2),
+                             radio2 * np.cos(tita2),
+                             0])
         pos2_abs = pos2_rel + pos1_abs
         waypoint2 = Dummy.create()
         waypoint2.set_position(pos2_abs)
