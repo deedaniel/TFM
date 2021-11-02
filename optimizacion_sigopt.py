@@ -9,7 +9,7 @@ TASK_DIR = "three_obstacles/"
 VARIATION = "three_obstacles"
 TASK_NAME = "pick_and_place"
 
-SIGOPT_API_TOKEN = "AVRITBIJFQBNAZWRCPLCZLODWFKLNGMPJPFXLXYZLTJVHOSE"
+SIGOPT_API_TOKEN = #
 conn = Connection(client_token=SIGOPT_API_TOKEN)
 
 listas = []
